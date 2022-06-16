@@ -1,3 +1,5 @@
 .idea/*
 *.pyc
 *.sqlite3
+*.egg-info
+dist
