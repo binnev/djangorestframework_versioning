@@ -1,1 +1,1 @@
-from base import Version
+from .base import Version

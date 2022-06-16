@@ -1,14 +1,16 @@
-from typing import Type, Union
+from typing import Type, Union, TYPE_CHECKING
 
 from packaging.version import Version as _Version
 
 from ..exceptions import VersionDoesNotExist
-from ..transform import Transform
+
+if TYPE_CHECKING:
+    from ..transform import Transform
 
 
 class Version(_Version):
     notes: list[str]
-    transforms: list[Type[Transform]]
+    transforms: list[Type["Transform"]]
 
     def __init__(
         self,
