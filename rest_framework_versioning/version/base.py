@@ -59,4 +59,4 @@ class Version(_Version):
 
 
 def parse_other(other):
-    return other if isinstance(other, _BaseVersion) else Version(other)
+    return other if isinstance(other, _Version) else Version(other)
