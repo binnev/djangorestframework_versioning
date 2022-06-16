@@ -1,11 +1,14 @@
 from typing import Type, Union
 
-from packaging.version import Version
+from packaging.version import Version as _Version
+
+from ..exceptions import VersionDoesNotExist
+from ..transform import Transform
 
 
-class Version(Version):
+class Version(_Version):
     notes: list[str]
-    transforms: list[Type[BaseTransform]]
+    transforms: list[Type[Transform]]
 
     def __init__(
         self,
@@ -21,9 +24,10 @@ class Version(Version):
 
     @classmethod
     def list(cls):
-        from thing.versions import VERSIONS
-
-        return VERSIONS
+        raise NotImplementedError(
+            "You need to subclass this and provide the .list() method which returns a list of "
+            "Version instances"
+        )
 
     @classmethod
     def get(cls, version_str: str):
