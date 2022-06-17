@@ -2,10 +2,10 @@ from typing import Type, Union, TYPE_CHECKING
 
 from packaging.version import Version as _Version
 
-from ..exceptions import VersionDoesNotExist
+from src.drf_versioning.exceptions import VersionDoesNotExist
 
 if TYPE_CHECKING:
-    from ..transform import Transform
+    from src.drf_versioning.transform import Transform
 
 
 class Version(_Version):

@@ -4,7 +4,7 @@ from importlib import import_module
 from django.http import QueryDict
 from rest_framework import serializers
 
-from ..exceptions import TransformBaseNotDeclaredException
+from src.drf_versioning.exceptions import TransformBaseNotDeclaredException
 from . import Transform
 
 

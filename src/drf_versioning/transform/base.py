@@ -1,4 +1,4 @@
-from ..version import Version
+from src.drf_versioning.version import Version
 
 
 class Transform:
