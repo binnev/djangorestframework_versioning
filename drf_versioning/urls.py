@@ -1,5 +1,5 @@
 from rest_framework.routers import DefaultRouter
-from src.drf_versioning import views
+from drf_versioning import views
 
 router = DefaultRouter()
 

@@ -1,6 +1,6 @@
 from rest_framework.versioning import AcceptHeaderVersioning as _AcceptHeaderVersioning
 
-from src.drf_versioning.version import Version
+from drf_versioning.version import Version
 
 
 class AcceptHeaderVersioning(_AcceptHeaderVersioning):

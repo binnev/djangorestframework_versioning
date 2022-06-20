@@ -1,8 +1,8 @@
 from rest_framework import viewsets, mixins, decorators
 from rest_framework.response import Response
 
-from src.drf_versioning.version import Version
-from src.drf_versioning.version.serializers import VersionSerializer
+from drf_versioning.version import Version
+from drf_versioning.version.serializers import VersionSerializer
 
 
 class VersionViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
