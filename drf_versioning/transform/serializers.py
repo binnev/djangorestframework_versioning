@@ -32,7 +32,7 @@ class VersioningSerializer(serializers.Serializer):
     def _check_transform_base_declared(self):
         if not self.transform_base:
             raise TransformBaseNotDeclaredException(
-                "VersioningParser cannot correctly promote incoming resources with no transform classes."
+                f"{self.__class__.__name__} has not declared a transform_base."
             )
 
     def _get_request_version(self):
