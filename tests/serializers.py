@@ -12,4 +12,5 @@ class ThingSerializer(VersioningSerializer, serializers.ModelSerializer):
         fields = [
             "id",
             "name",
+            "number",
         ]

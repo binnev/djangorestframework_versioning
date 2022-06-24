@@ -20,12 +20,27 @@ class MockRequest:
     "version, expected_data",
     [
         (
-            versions.VERSION_1_0_0,
+            versions.VERSION_1_0_0,  # todo: should raise 404 as Thing model not introduced yet.
             dict(
                 id=1,
                 name="bar",
             ),
-        )
+        ),
+        (
+            versions.VERSION_2_0_0,
+            dict(
+                id=1,
+                name="bar",
+            ),
+        ),
+        (
+            versions.VERSION_2_1_0,
+            dict(
+                id=1,
+                name="bar",
+                number=420,
+            ),
+        ),
     ],
 )
 def test_thing_serializer_to_representation(version, expected_data):
@@ -34,6 +49,7 @@ def test_thing_serializer_to_representation(version, expected_data):
         Thing,
         id=1,
         name="bar",
+        number=420,
     )
     serializer = ThingSerializer(instance=thing, context={"request": request})
     expected_data = expected_data
@@ -47,7 +63,22 @@ def test_thing_serializer_to_representation(version, expected_data):
             versions.VERSION_1_0_0,
             dict(name="bar"),
             dict(name="bar"),
-        )
+        ),
+        (
+            versions.VERSION_2_0_0,
+            dict(name="bar"),
+            dict(name="bar"),
+        ),
+        (
+            versions.VERSION_2_1_0,
+            dict(name="bar"),
+            dict(name="bar", number=0),
+        ),
+        (
+            versions.VERSION_2_1_0,
+            dict(name="bar", number=420),
+            dict(name="bar", number=420),
+        ),
     ],
 )
 def test_thing_serializer_to_internal_value(version, post_data, expected_field_values):
