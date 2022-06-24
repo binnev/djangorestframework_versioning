@@ -126,6 +126,9 @@ STATIC_URL = "/static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+REST_FRAMEWORK = {
+    "DEFAULT_VERSIONING_CLASS": "drf_versioning.middleware.AcceptHeaderVersioning",
+}
 
 DRF_VERSIONING_SETTINGS = {
     "VERSION_LIST": "tests.versions.VERSIONS",
