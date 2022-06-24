@@ -18,8 +18,7 @@ class RemoveField(Transform):
     null_value = None  # the value to serialize for the removed field for old versions
 
     def to_internal_value(self, data, request):
-        """No action required for to_internal_value because the serializer will ignore fields it
-        doesn't have."""
+        data.pop(self.field_name, None)
         return data
 
     def to_representation(self, data, request, instance):
