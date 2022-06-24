@@ -1,6 +1,14 @@
 import pytest
 
-from drf_versioning.transform import AddField, RemoveField
+from drf_versioning.transform import AddField, RemoveField, Transform
+
+
+def test_transform_notimplemented():
+    trans = Transform()
+    with pytest.raises(NotImplementedError):
+        trans.to_internal_value("data", "request")
+    with pytest.raises(NotImplementedError):
+        trans.to_representation("data", "request", "instance")
 
 
 @pytest.mark.parametrize("transform_class", [AddField, RemoveField])
