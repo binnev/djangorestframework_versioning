@@ -6,12 +6,10 @@ from django.conf import settings
 from django.test.signals import setting_changed
 from rest_framework.settings import perform_import
 
-DEFAULTS = {
-    ...,
-}
+DEFAULTS = {"VERSION_LIST": []}
 
 IMPORT_STRINGS = [
-    ...,
+    "VERSION_LIST",
 ]
 
 REMOVED_SETTINGS = []
@@ -82,4 +80,4 @@ def reload_versioning_settings(*args, **kwargs):
         versioning_settings.reload()
 
 
-setting_changed.connect(reload_versioning_settings())
+setting_changed.connect(reload_versioning_settings)
