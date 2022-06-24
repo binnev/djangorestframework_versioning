@@ -6,7 +6,9 @@ from django.conf import settings
 from django.test.signals import setting_changed
 from rest_framework.settings import perform_import
 
-DEFAULTS = {"VERSION_LIST": []}
+DEFAULTS = {
+    "VERSION_LIST": [],
+}
 
 IMPORT_STRINGS = [
     "VERSION_LIST",
@@ -54,12 +56,11 @@ class VersioningSettings:
         return val
 
     def __check_user_settings(self, user_settings):
-        SETTINGS_DOC = "https://www.django-rest-framework.org/api-guide/settings/"  # fixme
         for setting in REMOVED_SETTINGS:
             if setting in user_settings:
                 raise RuntimeError(
-                    "The '%s' setting has been removed. Please refer to '%s' for available settings."
-                    % (setting, SETTINGS_DOC)
+                    f"The {setting} setting has been removed. Please refer to "
+                    f"drf_versioning.settings.IMPORT_STRINGS for available settings."
                 )
         return user_settings
 
