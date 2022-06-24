@@ -3,6 +3,7 @@ from typing import Type, Union, TYPE_CHECKING
 from packaging.version import Version as _Version
 
 from drf_versioning.exceptions import VersionDoesNotExist
+from drf_versioning.settings import versioning_settings
 
 if TYPE_CHECKING:
     from drf_versioning.transform import Transform
@@ -26,10 +27,7 @@ class Version(_Version):
 
     @classmethod
     def list(cls):
-        raise NotImplementedError(
-            "You need to subclass this and provide the .list() method which returns a list of "
-            "Version instances"
-        )
+        return versioning_settings.VERSION_LIST
 
     @classmethod
     def get(cls, version_str: str):
