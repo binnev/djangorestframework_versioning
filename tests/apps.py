@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class DrfVersioningConfig(AppConfig):
+class TestsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "drf_versioning"
+    name = "tests"
