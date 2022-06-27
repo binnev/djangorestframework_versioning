@@ -11,3 +11,7 @@ Todo:
 - The holy grail: get drf's openapi schema generator to listen to all this stuff. 
 - Startup checks: 
   - VersioningSerializers have transform_base declared
+- Field becomes required / nullable or reverse
+- Add value to field choices (shouldn't appear in old schema)
+- Add value to field schema and map to old value. E. G. Active / Failed -> Active /Failed / Retrying but for older versions Retrying should be displayed as Failed
+
