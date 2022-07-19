@@ -8,10 +8,12 @@ from rest_framework.settings import perform_import
 
 DEFAULTS = {
     "VERSION_LIST": [],
+    "DEFAULT_VERSION": "latest",
 }
 
 IMPORT_STRINGS = [
     "VERSION_LIST",
+    "DEFAULT_VERSION",
 ]
 
 REMOVED_SETTINGS = []
