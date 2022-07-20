@@ -1,3 +1,5 @@
+import operator
+
 import pytest
 from packaging.version import InvalidVersion
 
@@ -51,3 +53,23 @@ def test_get_default_sad(input, expected_exception, patch_settings):
     with patch_settings(DEFAULT_VERSION=input):
         with pytest.raises(expected_exception):
             Version.get_default()
+
+
+@pytest.mark.parametrize(
+    "v_left, v_right, op, expected_output",
+    [
+        ("1.0", "2.0", operator.lt, True),
+        ("1.0", "2.1", operator.le, True),
+        ("1.0", "2.2", operator.gt, False),
+        ("1.0", "2.3", operator.ge, False),
+        ("1.0", "2.4", operator.eq, False),
+        ("1.0", "1.0", operator.eq, True),
+    ],
+)
+def test_comparison_happy(v_left, v_right, op, expected_output):
+    # comparison between Version instances
+    assert op(Version(v_left), Version(v_right)) == expected_output
+
+    # if one is a string, it should also work
+    assert op(Version(v_left), v_right) == expected_output
+    assert op(v_left, Version(v_right)) == expected_output
