@@ -1,15 +1,14 @@
 from rest_framework import viewsets, mixins, decorators
 from rest_framework.response import Response
 
+from drf_versioning.settings import versioning_settings
 from drf_versioning.version import Version
 from drf_versioning.version.serializers import VersionSerializer
 
 
 class VersionViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     serializer_class = VersionSerializer
-
-    def get_queryset(self):
-        return Version.list()
+    queryset = versioning_settings.VERSION_LIST
 
     @decorators.action(methods=["GET"], detail=False)
     def my_version(self, request, *args, **kwargs):
