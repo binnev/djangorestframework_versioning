@@ -4,13 +4,16 @@ from .version import Version
 
 
 class GetDefaultMixin(versioning.BaseVersioning):
-    """Return a default version instead of None, if no version is passed with the request."""
+    """
+    If no version is passed with the request -> return default version
+    If unknown version is passed in the request -> raise VersionDoesNotExist
+    """
 
     def determine_version(self, request, *args, **kwargs):
         version = super().determine_version(request, *args, **kwargs)
         if version is None:
             return Version.get_default().base_version
-        return version
+        return Version.get(version).base_version
 
 
 class AcceptHeaderVersioning(GetDefaultMixin, versioning.AcceptHeaderVersioning):
