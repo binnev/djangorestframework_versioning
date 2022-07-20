@@ -13,5 +13,5 @@ class VersionViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 
     @decorators.action(methods=["GET"], detail=False)
     def my_version(self, request, *args, **kwargs):
-        version = request.version
+        version = Version.get(request.version)
         return Response(data=self.get_serializer(instance=version).data, status=200)
