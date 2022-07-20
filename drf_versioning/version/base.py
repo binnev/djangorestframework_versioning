@@ -2,11 +2,11 @@ from typing import Type, Union, TYPE_CHECKING
 
 from packaging.version import Version as _Version, InvalidVersion
 
-from drf_versioning.exceptions import VersionDoesNotExist
-from drf_versioning.settings import versioning_settings
+from ..exceptions import VersionDoesNotExist
+from ..settings import versioning_settings
 
 if TYPE_CHECKING:
-    from drf_versioning.transform import Transform
+    from ..transform import Transform
 
 
 class Version(_Version):
