@@ -132,4 +132,5 @@ REST_FRAMEWORK = {
 
 DRF_VERSIONING_SETTINGS = {
     "VERSION_LIST": "tests.versions.VERSIONS",
+    "DEFAULT_VERSION": "latest",
 }
