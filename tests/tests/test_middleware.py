@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
-from drf_versioning.middleware import AcceptHeaderVersioning
+from drf_versioning.middleware import GetDefaultMixin
 from drf_versioning.version import Version
 
 
@@ -14,12 +14,12 @@ from drf_versioning.version import Version
     ],
 )
 @patch("drf_versioning.version.base.Version.get_default", return_value=Version("666.69.420"))
-@patch("rest_framework.versioning.AcceptHeaderVersioning.determine_version")
+@patch("rest_framework.versioning.BaseVersioning.determine_version")
 def test_accept_header_versioning(
     mock, mock_get_default, super_version, expected_version, patch_settings
 ):
     mock.return_value = super_version
-    version = AcceptHeaderVersioning().determine_version(...)
+    version = GetDefaultMixin().determine_version(...)
 
     assert isinstance(version, str)
     assert version == expected_version
