@@ -55,7 +55,7 @@ class VersioningSettings:
         return val
 
     def __check_user_settings(self, user_settings):
-        for setting in REMOVED_SETTINGS:
+        for setting in REMOVED_SETTINGS:  # pragma: no cover
             if setting in user_settings:
                 raise RuntimeError(
                     f"The {setting} setting has been removed. Please refer to "

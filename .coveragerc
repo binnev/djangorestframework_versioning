@@ -1,0 +1,18 @@
+[run]
+omit =
+    */apps.py
+    */migrations/*
+    */env/*
+    */urls.py
+    */wsgi.py
+    */typing.py
+    **/mocks/**.py
+    manage.py
+    **/__init__.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+
+    if TYPE_CHECKING:
+    raise NotImplementedError
