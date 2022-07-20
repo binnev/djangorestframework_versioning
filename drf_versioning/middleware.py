@@ -11,7 +11,7 @@ class GetDefaultMixin(versioning.BaseVersioning):
 
     def determine_version(self, request, *args, **kwargs):
         version = super().determine_version(request, *args, **kwargs)
-        if version is None:
+        if not version:
             return Version.get_default().base_version
         return Version.get(version).base_version
 

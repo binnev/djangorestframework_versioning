@@ -17,6 +17,7 @@ MOCK_VERSION_LIST = [
     [
         ("6.9", "6.9"),  # version passed in request
         (None, "4.2.0"),  # no version in request -> use default
+        ("", "4.2.0"),  # no version in request -> use default
     ],
 )
 @patch("rest_framework.versioning.BaseVersioning.determine_version")
