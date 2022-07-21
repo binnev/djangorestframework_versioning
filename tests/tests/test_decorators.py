@@ -57,7 +57,7 @@ def test_versioned_view(kwargs, request_version, expected_result):
 @pytest.mark.parametrize(
     "view_min, viewset_min, expected_result",
     [
-        (None, None, versions.VERSION_1_0_0),
+        (None, None, versions.VERSION_0_0_1),
         (Version("1.0"), None, Version("1.0")),
         (None, Version("1.0"), Version("1.0")),
         (Version("1.0"), Version("1.0"), Version("1.0")),

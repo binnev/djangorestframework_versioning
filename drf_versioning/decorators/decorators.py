@@ -7,12 +7,25 @@ from drf_versioning.version import Version
 
 
 def versioned_view(original_obj=None, introduced_in: Version = None, removed_in: Version = None):
-    if introduced_in is None and removed_in is None:
-        raise ValueError("You need to pass either introduced_in or removed_in")
-
     def decorate(obj):
+        if introduced_in is None and removed_in is None:
+            raise ValueError(f"You need to pass either introduced_in or removed_in for {obj}")
+
         @wraps(obj)
-        def func_wrapper(viewset, request, *args, **kwargs):
+        def func_wrapper(*args, **kwargs):
+            # if it's a bound method which we decorated dynamically:
+            # handler = versioned_view(handler, ...)
+            if hasattr(obj, "__self__"):
+                request = args[0]
+                viewset = obj.__self__
+
+            # if it's an unbound function we decorated statically at class definition:
+            # @versioned_view(...)
+            # def list(...):
+            #     ...
+            else:
+                viewset, request = args
+
             viewset_introduced_in = getattr(viewset, "introduced_in", None)
             viewset_removed_in = getattr(viewset, "removed_in", None)
             min_version = get_min_version(introduced_in, viewset_introduced_in)
