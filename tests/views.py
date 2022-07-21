@@ -15,37 +15,18 @@ class VersionedViewSet(viewsets.GenericViewSet):
     removed_in: Optional[Version] = None
 
     def dispatch(self, request, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
-        request = self.initialize_request(request, *args, **kwargs)
-        self.request = request
-        self.headers = self.default_response_headers  # deprecate?
-
-        try:
-            self.initial(request, *args, **kwargs)
-
-            # Get the appropriate handler method
-            if request.method.lower() in self.http_method_names:
-                handler = getattr(self, request.method.lower(), self.http_method_not_allowed)
-            else:
-                handler = self.http_method_not_allowed
-
-            ### Identical to DRF above here #######################################################
+        request_method = request.method.lower()
+        if request_method in self.http_method_names:
+            handler = getattr(self, request_method, self.http_method_not_allowed)
             handler = versioned_view(
                 handler, introduced_in=self.introduced_in, removed_in=self.removed_in
             )
-            ### Identical to DRF below here #######################################################
-            response = handler(request, *args, **kwargs)
-
-        except Exception as exc:
-            response = self.handle_exception(exc)
-
-        self.response = self.finalize_response(request, response, *args, **kwargs)
-        return self.response
+            setattr(self, request_method, handler)
+        return super().dispatch(request, *args, **kwargs)
 
 
 class ThingViewSet(
-    # VersionedViewSet,
+    VersionedViewSet,
     viewsets.ModelViewSet,
 ):
     serializer_class = ThingSerializer
