@@ -33,7 +33,7 @@ def test_get_sad(input, expected_exception):
     [
         ("2.0.0", versions.VERSION_2_0_0),
         ("earliest", versions.VERSION_1_0_0),
-        ("latest", versions.VERSION_2_1_0),
+        ("latest", versions.VERSION_2_2_0),
     ],
 )
 def test_get_default_happy(settings_default, expected_version, patch_settings):
