@@ -10,6 +10,7 @@ from tests.serializers import ThingSerializer
 class ThingViewSet(viewsets.ModelViewSet):
     serializer_class = ThingSerializer
     queryset = Thing.objects.all()
+    introduced_in = versions.VERSION_1_0_0
 
     @versioned_view(introduced_in=versions.VERSION_2_0_0)
     def list(self, request, *args, **kwargs):
