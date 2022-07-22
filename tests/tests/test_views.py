@@ -59,3 +59,44 @@ def test_thing_viewset(request_method, url, request_version, expected_status_cod
         url, HTTP_ACCEPT=f"application/json; version={request_version}", data=body, format="json"
     )
     assert response.status_code == expected_status_code
+
+
+@pytest.mark.parametrize(
+    "request_method, url, request_version, expected_status_code",
+    [
+        ("get", "/thing2/", "1.0.0", 404),  # viewset introduced but list action not yet introduced
+        ("get", "/thing2/", "2.0.0", 200),
+        ("get", "/thing2/", "2.1.0", 200),
+        ("get", "/thing2/", "2.2.0", 200),
+        ("get", "/thing2/666/", "1.0.0", 200),
+        ("get", "/thing2/666/", "2.0.0", 200),
+        ("get", "/thing2/666/", "2.1.0", 404),  # retrieve action removed in v2.1.0
+        ("get", "/thing2/666/", "2.2.0", 404),
+        ("get", "/thing2/666/get_name/", "1.0.0", 404),
+        ("get", "/thing2/666/get_name/", "2.0.0", 404),
+        ("get", "/thing2/666/get_name/", "2.1.0", 200),  # get_name introduced in v2.1.0
+        ("get", "/thing2/666/get_name/", "2.2.0", 200),
+        # the rest just obey the viewset introduced_in/removed_in
+        ("post", "/thing2/", "1.0.0", 201),
+        ("post", "/thing2/", "2.0.0", 201),
+        ("post", "/thing2/", "2.1.0", 201),
+        ("post", "/thing2/", "2.2.0", 201),
+        ("delete", "/thing2/666/", "1.0.0", 204),
+        ("delete", "/thing2/666/", "2.0.0", 204),
+        ("delete", "/thing2/666/", "2.1.0", 204),
+        ("delete", "/thing2/666/", "2.2.0", 204),
+        ("patch", "/thing2/666/", "1.0.0", 200),
+        ("patch", "/thing2/666/", "2.0.0", 200),
+        ("patch", "/thing2/666/", "2.1.0", 200),
+        ("patch", "/thing2/666/", "2.2.0", 200),
+    ],
+)
+def test_thing2_viewset(request_method, url, request_version, expected_status_code):
+    mixer.blend(Thing, id=666)
+    client = APIClient()
+    body = {"name": "foo", "number": 420}
+    method = getattr(client, request_method)
+    response = method(
+        url, HTTP_ACCEPT=f"application/json; version={request_version}", data=body, format="json"
+    )
+    assert response.status_code == expected_status_code

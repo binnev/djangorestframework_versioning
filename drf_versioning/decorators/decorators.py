@@ -30,7 +30,9 @@ def versioned_view(original_obj=None, introduced_in: Version = None, removed_in:
             viewset_removed_in = getattr(viewset, "removed_in", None)
             min_version = get_min_version(introduced_in, viewset_introduced_in)
             max_version = get_max_version(removed_in, viewset_removed_in)
-            if request.version < min_version or request.version >= max_version:
+            if min_version and request.version < min_version:
+                raise Http404()
+            if max_version and request.version >= max_version:
                 raise Http404()
             output = obj(*args, **kwargs)
             return output
