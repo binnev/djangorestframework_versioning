@@ -7,6 +7,8 @@ Todo:
   - Admin page for Versions (no editing, but just to view what is included in each version)
   - Overridable Version class
   - Version class to have methods to describe Transforms, ViewSets / views, etc 
+  - FUTURE and PAST version singletons (?) that always "win" comparisons with normal Versions.
+    - This will allow marking features with introduced_in=Version.FUTURE, allowing release to be postponed till a later version. 
 -VersionedSerializer 
   - Make VersionedSerializer work as inline serializer 
     - Needs to get context.request from parent probably
