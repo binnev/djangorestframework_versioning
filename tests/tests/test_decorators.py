@@ -9,6 +9,13 @@ from drf_versioning.version import Version
 from tests import versions
 
 
+def test_versioned_view_raises_error_if_no_args_passed():
+    foo = lambda: None
+    with pytest.raises(ValueError) as e:
+        versioned_view(foo)
+    assert str(e.value).startswith("You need to pass either introduced_in or removed_in for")
+
+
 @pytest.mark.parametrize(
     "kwargs, request_version, expected_result",
     [
