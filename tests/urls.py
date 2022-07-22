@@ -5,5 +5,6 @@ router = DefaultRouter()
 
 router.register("thing", views.ThingViewSet, basename="thing")
 router.register("thing2", views.OtherThingViewSet, basename="thing2")
+router.register("thing3", views.YetAnotherThingViewSet, basename="thing3")
 
 urlpatterns = router.urls
