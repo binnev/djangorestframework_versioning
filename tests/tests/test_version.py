@@ -32,7 +32,7 @@ def test_get_sad(input, expected_exception):
     "settings_default, expected_version",
     [
         ("2.0.0", versions.VERSION_2_0_0),
-        ("earliest", versions.VERSION_1_0_0),
+        ("earliest", versions.VERSION_0_0_1),
         ("latest", versions.VERSION_2_2_0),
     ],
 )
