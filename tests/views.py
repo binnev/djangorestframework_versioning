@@ -1,28 +1,11 @@
-from typing import Optional
-
 from rest_framework import viewsets, decorators
 from rest_framework.response import Response
 
 from drf_versioning.decorators import versioned_view
-from drf_versioning.version import Version
+from drf_versioning.views import VersionedViewSet
 from tests import versions
 from tests.models import Thing
 from tests.serializers import ThingSerializer
-
-
-class VersionedViewSet(viewsets.GenericViewSet):
-    introduced_in: Optional[Version] = None
-    removed_in: Optional[Version] = None
-
-    def dispatch(self, request, *args, **kwargs):
-        request_method = request.method.lower()
-        if request_method in self.http_method_names:
-            handler = getattr(self, request_method, self.http_method_not_allowed)
-            handler = versioned_view(
-                handler, introduced_in=self.introduced_in, removed_in=self.removed_in
-            )
-            setattr(self, request_method, handler)
-        return super().dispatch(request, *args, **kwargs)
 
 
 class ThingViewSet(

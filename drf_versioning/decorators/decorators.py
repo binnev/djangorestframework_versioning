@@ -32,7 +32,7 @@ def versioned_view(original_obj=None, introduced_in: Version = None, removed_in:
             max_version = get_max_version(removed_in, viewset_removed_in)
             if request.version < min_version or request.version >= max_version:
                 raise Http404()
-            output = obj(viewset, request, *args, **kwargs)
+            output = obj(*args, **kwargs)
             return output
 
         return func_wrapper
