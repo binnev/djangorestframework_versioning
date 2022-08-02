@@ -2,6 +2,7 @@
 Work In Progress! 
 
 Todo: 
+- BUG: Allow multiple transforms per version -.-
 - Have Transform, VersionedViewSet add themselves to Version's .transforms/.views attributes. (The reverse is pretty cumbersome to maintain)
 - Version class 
   - Admin page for Versions (no editing, but just to view what is included in each version)
@@ -17,7 +18,7 @@ Todo:
 - The holy grail: get drf's openapi schema generator to listen to all this stuff. 
 - Startup checks: 
   - VersioningSerializers have transform_base declared
-- Cases for the transforms to handle (and examples in the docs): 
+- Cases for the transforms to handle (**add your edge cases here!**) (and examples in the docs): 
   - Field becomes required / nullable or reverse
   - Add value to field choices (shouldn't appear in old schema)
   - Add value to field schema and map to old value. E. G. Active / Failed -> Active /Failed / Retrying but for older versions Retrying should be displayed as Failed
