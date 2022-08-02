@@ -2,6 +2,7 @@
 Work In Progress! 
 
 Todo: 
+- Add Versions for the versions of this repo :mind-blown:
 - BUG: Allow multiple transforms per version -.-
 - Have Transform, VersionedViewSet add themselves to Version's .transforms/.views attributes. (The reverse is pretty cumbersome to maintain)
 - Version class 
