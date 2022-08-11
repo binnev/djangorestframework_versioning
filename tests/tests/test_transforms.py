@@ -1,6 +1,7 @@
 import pytest
 
 from drf_versioning.transform import AddField, RemoveField, Transform
+from drf_versioning.version import Version
 
 
 def test_transform_notimplemented():
@@ -64,3 +65,17 @@ def test_removefield_to_representation(outgoing_data, expected_result):
     trans.field_name = "foo"
     trans.null_value = 0
     assert trans.to_representation(data=outgoing_data, request=..., instance=...) == expected_result
+
+
+def test_transform_meta():
+    v420 = Version("4.20")
+
+    class TransformSubclass(Transform):
+        version = v420
+
+    assert TransformSubclass in v420.transforms
+
+    class SubclassOfAddField(AddField):
+        version = v420
+
+    assert SubclassOfAddField in v420.transforms
