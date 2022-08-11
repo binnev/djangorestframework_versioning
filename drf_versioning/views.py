@@ -25,12 +25,10 @@ class VersionedViewSetMeta(type):
 
     def __new__(cls, name, bases, dct):
         subclass = super().__new__(cls, name, bases, dct)
-        if version := getattr(subclass, "introduced_in", None):
-            version.viewsets_introduced.append(subclass)
-
-        if version := getattr(subclass, "removed_in", None):
-            version.viewsets_removed.append(subclass)
-
+        if introduced_in_version := getattr(subclass, "introduced_in", None):
+            introduced_in_version.viewsets_introduced.append(subclass)
+        if removed_in_version := getattr(subclass, "removed_in", None):
+            removed_in_version.viewsets_removed.append(subclass)
         return subclass
 
 
