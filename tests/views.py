@@ -8,10 +8,7 @@ from tests.models import Thing
 from tests.serializers import ThingSerializer
 
 
-class ThingViewSet(
-    VersionedViewSet,
-    viewsets.ModelViewSet,
-):
+class ThingViewSet(VersionedViewSet, viewsets.ModelViewSet):
     serializer_class = ThingSerializer
     queryset = Thing.objects.all()
     introduced_in = versions.VERSION_1_0_0
@@ -32,10 +29,7 @@ class ThingViewSet(
         return Response(data={"name": obj.name})
 
 
-class OtherThingViewSet(
-    VersionedViewSet,
-    viewsets.ModelViewSet,
-):
+class OtherThingViewSet(VersionedViewSet, viewsets.ModelViewSet):
     serializer_class = ThingSerializer
     queryset = Thing.objects.all()
     introduced_in = versions.VERSION_1_0_0
@@ -55,10 +49,7 @@ class OtherThingViewSet(
         return Response(data={"name": obj.name})
 
 
-class YetAnotherThingViewSet(
-    VersionedViewSet,
-    viewsets.ModelViewSet,
-):
+class YetAnotherThingViewSet(VersionedViewSet, viewsets.ModelViewSet):
     serializer_class = ThingSerializer
     queryset = Thing.objects.all()
     removed_in = versions.VERSION_2_2_0
@@ -76,5 +67,3 @@ class YetAnotherThingViewSet(
     def get_name(self, request, *args, **kwargs):
         obj = self.get_object()
         return Response(data={"name": obj.name})
-
-
