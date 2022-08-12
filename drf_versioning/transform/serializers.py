@@ -5,22 +5,22 @@ from django.http import QueryDict
 from rest_framework import serializers
 
 from . import Transform
-from ..exceptions import TransformBaseNotDeclaredException
+from ..exceptions import TransformsNotDeclaredException
 from ..version import Version
 
 
-def import_transforms(path: str):
+def import_transforms(path: str) -> tuple[type[Transform]]:
     module = import_module(path)
     transforms = []
     for name, obj in inspect.getmembers(module):
         if isinstance(obj, type) and issubclass(obj, Transform) and getattr(obj, "version", None):
             transforms.append(obj)
-    transforms = sorted(transforms, key=lambda t: t.version)
+    transforms = tuple(sorted(transforms, key=lambda t: t.version))
     return transforms
 
 
 class VersioningSerializer(serializers.Serializer):
-    transforms: list[type[Transform]] = None
+    transforms: tuple[type[Transform]] = None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -28,8 +28,8 @@ class VersioningSerializer(serializers.Serializer):
 
     def check_transforms_declared(self):
         if not self.transforms:
-            raise TransformBaseNotDeclaredException(
-                f"{self.__class__.__name__} has not declared a transform_base."
+            raise TransformsNotDeclaredException(
+                f"{self.__class__.__name__} has not declared transforms."
             )
 
     def _get_request_version(self):
