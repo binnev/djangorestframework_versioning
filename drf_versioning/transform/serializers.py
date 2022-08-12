@@ -4,33 +4,30 @@ from importlib import import_module
 from django.http import QueryDict
 from rest_framework import serializers
 
-from ..exceptions import TransformBaseNotDeclaredException
 from . import Transform
+from ..exceptions import TransformBaseNotDeclaredException
+from ..version import Version
 
 
-def get_transform_classes(transform_base=None, base_version=1, reverse=False):
-    module, base = transform_base.rsplit(".", 1)
-    mod = import_module(module)
-
-    transform_classes_dict = {}
-
-    for name, transform_class in inspect.getmembers(mod):
-        if name.startswith(base) and issubclass(transform_class, Transform):
-            if base_version < transform_class.version:
-                transform_classes_dict[transform_class.version.base_version] = transform_class
-
-    ordered_transform_classes_list = [
-        transform_classes_dict[key] for key in sorted(transform_classes_dict, reverse=reverse)
-    ]
-
-    return ordered_transform_classes_list
+def import_transforms(path: str):
+    module = import_module(path)
+    transforms = []
+    for name, obj in inspect.getmembers(module):
+        if isinstance(obj, type) and issubclass(obj, Transform) and getattr(obj, "version", None):
+            transforms.append(obj)
+    transforms = sorted(transforms, key=lambda t: t.version)
+    return transforms
 
 
 class VersioningSerializer(serializers.Serializer):
-    transform_base = None
+    transforms: list[type[Transform]] = None
 
-    def _check_transform_base_declared(self):
-        if not self.transform_base:
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.check_transforms_declared()
+
+    def check_transforms_declared(self):
+        if not self.transforms:
             raise TransformBaseNotDeclaredException(
                 f"{self.__class__.__name__} has not declared a transform_base."
             )
@@ -40,35 +37,33 @@ class VersioningSerializer(serializers.Serializer):
         if request and hasattr(request, "version"):
             return request.version
 
+    def transforms_for_version(self, version: Version, reverse=False) -> list[type[Transform]]:
+        return sorted(
+            filter(lambda t: version < t.version, self.transforms),
+            key=lambda t: t.version,
+            reverse=reverse,
+        )
+
     def to_representation(self, instance):
         """
         Serializes the outgoing data as JSON and executes any available version transforms in backwards
         order against the serialized representation to convert the highest supported version into the
         requested version of the resource.
         """
-        self._check_transform_base_declared()
         data = super().to_representation(instance)
-        if instance:
-            request = self.context.get("request")
-            if request_version := self._get_request_version():
-                # demote data until we've run the transform just above the requested version
-                transforms = get_transform_classes(
-                    self.transform_base, base_version=request_version, reverse=True
-                )
-                for transform in transforms:
-                    data = transform().to_representation(data, request, instance)
+        request = self.context.get("request")
+        if request_version := self._get_request_version():
+            # demote data until we've run the transform just above the requested version
+            for transform in self.transforms_for_version(version=request_version, reverse=True):
+                data = transform().to_representation(data, request, instance)
 
         return data
 
     def to_internal_value(self, data: QueryDict):
-        self._check_transform_base_declared()
         data = data.copy()  # immutable QueryDict to mutable dict
         request = self.context.get("request")
         if request_version := self._get_request_version():
-            transforms = get_transform_classes(
-                self.transform_base, base_version=request_version, reverse=False
-            )
-            for transform in transforms:
+            for transform in self.transforms_for_version(version=request_version, reverse=False):
                 data = transform().to_internal_value(data, request)
 
         return super().to_internal_value(data)
