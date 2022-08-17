@@ -1,7 +1,18 @@
 from ..version import Version
 
 
-class Transform:
+class TransformMeta(type):
+    """Detect the version attribute on a Transform subclass, and register the Transform with that
+    version"""
+
+    def __new__(cls, name, bases, dct):
+        subclass = super().__new__(cls, name, bases, dct)
+        if version := getattr(subclass, "version", None):
+            version.transforms.append(subclass)
+        return subclass
+
+
+class Transform(metaclass=TransformMeta):
     """
     Mutates serializer data between different versions
     """

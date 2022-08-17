@@ -19,7 +19,20 @@ class VersionViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
         return Response(data=self.get_serializer(instance=version).data, status=200)
 
 
-class VersionedViewSet(viewsets.GenericViewSet):
+class VersionedViewSetMeta(type):
+    """Detect if the introduced_in / removed_in class attributes have been set on a
+    VersionedViewSet subclass, and register it with the Version instance if necessary."""
+
+    def __new__(cls, name, bases, dct):
+        subclass = super().__new__(cls, name, bases, dct)
+        if introduced_in_version := getattr(subclass, "introduced_in", None):
+            introduced_in_version.viewsets_introduced.append(subclass)
+        if removed_in_version := getattr(subclass, "removed_in", None):
+            removed_in_version.viewsets_removed.append(subclass)
+        return subclass
+
+
+class VersionedViewSet(viewsets.GenericViewSet, metaclass=VersionedViewSetMeta):
     introduced_in: Optional[Version] = None
     removed_in: Optional[Version] = None
 

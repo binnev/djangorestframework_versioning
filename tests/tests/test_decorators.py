@@ -89,3 +89,15 @@ def test_get_min_version(view_min, viewset_min, expected_result):
 )
 def test_get_max_version(view_max, viewset_max, expected_result):
     assert get_max_version(view_max, viewset_max) == expected_result
+
+
+def test_versioned_view_adds_view_to_version_instance():
+    v42 = Version("4.2.0")
+    v69 = Version("6.9.0")
+
+    @versioned_view(introduced_in=v42, removed_in=v69)
+    def func():
+        pass  # pragma: no cover
+
+    assert func in v42.view_methods_introduced
+    assert func in v69.view_methods_removed

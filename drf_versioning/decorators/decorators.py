@@ -37,6 +37,12 @@ def versioned_view(original_obj=None, introduced_in: Version = None, removed_in:
             output = obj(*args, **kwargs)
             return output
 
+        if introduced_in:
+            introduced_in.view_methods_introduced.append(func_wrapper)
+
+        if removed_in:
+            removed_in.view_methods_removed.append(func_wrapper)
+
         return func_wrapper
 
     return decorate(original_obj) if original_obj else decorate

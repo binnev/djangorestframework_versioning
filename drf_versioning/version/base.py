@@ -12,17 +12,22 @@ if TYPE_CHECKING:
 class Version(_Version):
     notes: list[str]
     transforms: list[Type["Transform"]]
+    viewsets_introduced: list
+    viewsets_removed: list
+    view_methods_introduced: list
+    view_methods_removed: list
 
     def __init__(
         self,
         version: str,
         notes=None,
-        transforms=None,
     ) -> None:
         self.notes = notes or []
-        self.transforms = transforms or []
-        for transform in self.transforms:
-            transform.version = self
+        self.transforms = []
+        self.viewsets_introduced = []
+        self.viewsets_removed = []
+        self.view_methods_introduced = []
+        self.view_methods_removed = []
         super().__init__(version)
 
     @classmethod

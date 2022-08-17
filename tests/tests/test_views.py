@@ -2,7 +2,8 @@ import pytest
 from mixer.backend.django import mixer
 from rest_framework.test import APIRequestFactory, APIClient
 
-from drf_versioning.views import VersionViewSet
+from drf_versioning.version import Version
+from drf_versioning.views import VersionViewSet, VersionedViewSet
 from tests.models import Thing
 
 pytestmark = pytest.mark.django_db
@@ -14,10 +15,7 @@ def test_my_version():
     view = VersionViewSet.as_view(actions={"get": "my_version"})
     response = view(request)
     assert response.status_code == 200
-    assert response.data == {
-        "version": "2.0.0",
-        "notes": ["Added Thing model."],
-    }
+    assert response.data["version"] == "2.0.0"
 
 
 @pytest.mark.parametrize(
@@ -141,3 +139,17 @@ def test_thing3_viewset(request_method, url, request_version, expected_status_co
         url, HTTP_ACCEPT=f"application/json; version={request_version}", data=body, format="json"
     )
     assert response.status_code == expected_status_code
+
+
+def test_versioned_viewset_meta():
+    v420 = Version("4.20")
+    v69 = Version("6.9")
+
+    class TestViewSet(VersionedViewSet):
+        introduced_in = v420
+        removed_in = v69
+
+    assert v420.viewsets_introduced == [TestViewSet]
+    assert v420.viewsets_removed == []
+    assert v69.viewsets_introduced == []
+    assert v69.viewsets_removed == [TestViewSet]
