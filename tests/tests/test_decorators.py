@@ -97,7 +97,7 @@ def test_versioned_view_adds_view_to_version_instance():
 
     @versioned_view(introduced_in=v42, removed_in=v69)
     def func():
-        pass
+        pass  # pragma: no cover
 
     assert func in v42.view_methods_introduced
     assert func in v69.view_methods_removed

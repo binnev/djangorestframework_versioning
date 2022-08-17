@@ -4,9 +4,11 @@ import pytest
 from mixer.backend.django import mixer
 
 from drf_versioning.version import Version
-from tests import versions
+from drf_versioning.version.serializers import VersionSerializer
+from tests import versions, views, transforms
 from tests.models import Thing
 from tests.serializers import ThingSerializer
+from tests.views import ThingViewSet
 
 pytestmark = pytest.mark.django_db
 
@@ -89,3 +91,24 @@ def test_thing_serializer_to_internal_value(version, post_data, expected_field_v
 
     for field_name, expected_value in expected_field_values.items():
         assert getattr(thing, field_name) == expected_value
+
+
+def test_version_serializer():
+    v = Version("6.9")
+    v.viewsets_introduced = [views.ThingViewSet]
+    v.viewsets_removed = [views.OtherThingViewSet]
+    v.view_methods_introduced = [views.ThingViewSet.list]
+    v.view_methods_removed = [views.OtherThingViewSet.get_name]
+    v.transforms = [transforms.ThingTransformAddNumber]
+    data = VersionSerializer(instance=v).data
+    assert data == {
+        "version": "6.9",
+        "notes": [],
+        "models": ["Added Thing.number field."],
+        "views": {
+            "endpoints_introduced": ["ThingViewSet"],
+            "endpoints_removed": ["OtherThingViewSet"],
+            "actions_introduced": ["ThingViewSet.list"],
+            "actions_removed": ["OtherThingViewSet.get_name"],
+        },
+    }
