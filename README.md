@@ -2,7 +2,6 @@
 Work In Progress! 
 
 Todo: 
-- Add Versions for the versions of this repo :mind-blown:
 - BUG: Allow multiple transforms per version -.-
 - Version class 
   - Admin page for Versions (no editing, but just to view what is included in each version)
@@ -25,3 +24,4 @@ Done:
 - Hard(er) link between VersioningSerializer and its transforms
 - Startup checks: 
   - VersioningSerializers have transform_base declared
+- Add Versions for the versions of this repo :mind-blown:
