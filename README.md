@@ -2,7 +2,9 @@
 Work In Progress! 
 
 Todo: 
-- BUG: Allow multiple transforms per version -.-
+- BUGS: 
+  - Allow multiple transforms per version -.-
+  - VersionedViewSet metaclass to check that either introduced_in or removed_in is not None
 - Version class 
   - Admin page for Versions (no editing, but just to view what is included in each version)
   - Overridable Version class
