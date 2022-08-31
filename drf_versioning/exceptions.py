@@ -4,3 +4,7 @@ class VersionDoesNotExist(Exception):
 
 class TransformsNotDeclaredException(Exception):
     pass
+
+
+class TransformBaseNotDeclaredException(Exception):
+    pass
