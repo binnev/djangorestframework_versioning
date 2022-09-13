@@ -14,4 +14,5 @@ class ThingSerializer(VersioningSerializer, serializers.ModelSerializer):
             "name",
             "number",
             "status",
+            "date_updated",
         ]
