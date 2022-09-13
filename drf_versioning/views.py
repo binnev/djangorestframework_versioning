@@ -1,9 +1,12 @@
+import abc
+from inspect import isabstract
 from typing import Optional
 
 from rest_framework import viewsets, mixins, decorators
 from rest_framework.response import Response
 
 from .decorators import versioned_view
+from .exceptions import VersionsNotDeclaredError
 from .settings import versioning_settings
 from .version import Version
 from .version.serializers import VersionSerializer
@@ -25,10 +28,20 @@ class VersionedViewSetMeta(type):
 
     def __new__(cls, name, bases, dct):
         subclass = super().__new__(cls, name, bases, dct)
-        if introduced_in_version := getattr(subclass, "introduced_in", None):
-            introduced_in_version.viewsets_introduced.append(subclass)
-        if removed_in_version := getattr(subclass, "removed_in", None):
+        introduced_in_version = getattr(subclass, "introduced_in", None)
+        removed_in_version = getattr(subclass, "removed_in", None)
+
+        # For all subclasses of VersionedViewSet (but not VersionedViewSet itself) ensure that at
+        # least one of introduced_in_version or removed_in_version has been declared.
+        # This is a bit janky because a subclass named VersionedViewSet could bypass this check,
+        # but 1) that's an unlikely edge case and 2) I don't have a better solution right now.
+        if name != "VersionedViewSet" and not (introduced_in_version or removed_in_version):
+            raise VersionsNotDeclaredError(subclass.__name__)
+
+        if removed_in_version:
             removed_in_version.viewsets_removed.append(subclass)
+        if introduced_in_version:
+            introduced_in_version.viewsets_introduced.append(subclass)
         return subclass
 
 

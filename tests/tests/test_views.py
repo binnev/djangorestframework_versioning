@@ -2,6 +2,7 @@ import pytest
 from mixer.backend.django import mixer
 from rest_framework.test import APIRequestFactory, APIClient
 
+from drf_versioning.exceptions import VersionsNotDeclaredError
 from drf_versioning.version import Version
 from drf_versioning.views import VersionViewSet, VersionedViewSet
 from tests.models import Thing
@@ -178,3 +179,16 @@ def test_versioned_viewset_meta():
     assert v420.viewsets_removed == []
     assert v69.viewsets_introduced == []
     assert v69.viewsets_removed == [TestViewSet]
+
+
+def test_versioned_viewset_meta_enforces_versions():
+    with pytest.raises(VersionsNotDeclaredError):
+
+        class BadViewSet(VersionedViewSet):
+            pass  # introduced_in and removed_in not declared
+
+    with pytest.raises(VersionsNotDeclaredError):
+
+        class BadViewSet2(VersionedViewSet):
+            introduced_in = None
+            removed_in = None

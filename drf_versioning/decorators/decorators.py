@@ -3,13 +3,14 @@ from functools import wraps
 from django.http import Http404
 
 from drf_versioning.decorators.utils import get_min_version, get_max_version
+from drf_versioning.exceptions import VersionsNotDeclaredError
 from drf_versioning.version import Version
 
 
 def versioned_view(original_obj=None, introduced_in: Version = None, removed_in: Version = None):
     def decorate(obj):
         if introduced_in is None and removed_in is None:
-            raise ValueError(f"You need to pass either introduced_in or removed_in for {obj}")
+            raise VersionsNotDeclaredError(obj)
 
         @wraps(obj)
         def func_wrapper(*args, **kwargs):

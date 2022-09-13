@@ -5,7 +5,7 @@ from django.http import QueryDict
 from rest_framework import serializers
 
 from . import Transform
-from ..exceptions import TransformsNotDeclaredException
+from ..exceptions import TransformsNotDeclaredError
 from ..version import Version
 
 
@@ -28,7 +28,7 @@ class VersioningSerializer(serializers.Serializer):
 
     def check_transforms_declared(self):
         if not self.transforms:
-            raise TransformsNotDeclaredException(
+            raise TransformsNotDeclaredError(
                 f"{self.__class__.__name__} has not declared transforms."
             )
 

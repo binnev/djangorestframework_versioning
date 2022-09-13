@@ -5,15 +5,15 @@ from django.http import Http404
 
 from drf_versioning.decorators import versioned_view
 from drf_versioning.decorators.utils import get_min_version, get_max_version
+from drf_versioning.exceptions import VersionsNotDeclaredError
 from drf_versioning.version import Version
 from tests import versions
 
 
 def test_versioned_view_raises_error_if_no_args_passed():
     foo = lambda: None
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(VersionsNotDeclaredError):
         versioned_view(foo)
-    assert str(e.value).startswith("You need to pass either introduced_in or removed_in for")
 
 
 @pytest.mark.parametrize(
