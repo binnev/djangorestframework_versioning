@@ -54,7 +54,6 @@ def test_thing_serializer_to_representation(version, expected_data):
         number=420,
     )
     serializer = ThingSerializer(instance=thing, context={"request": request})
-    expected_data = expected_data
     assert serializer.data == expected_data
 
 
