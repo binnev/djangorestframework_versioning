@@ -3,7 +3,7 @@ Work In Progress!
 
 Todo: 
 - BUGS: 
-  - Allow multiple transforms per version -.-
+  - add bugs here
 - Transform
   - Let transform also report which serializer(s) it was used by (in VersionSerializer)
 - Version class 
@@ -23,6 +23,7 @@ Todo:
   - Add value to field schema and map to old value. E. G. Active / Failed -> Active /Failed / Retrying but for older versions Retrying should be displayed as Failed
 
 Done: 
+- fixed multiple transforms per version bug
 - VersionedViewSet metaclass to check that either introduced_in or removed_in is not None
 - Have Transform, VersionedViewSet add themselves to Version's .transforms/.views attributes. (The reverse is pretty cumbersome to maintain)
 - Hard(er) link between VersioningSerializer and its transforms
