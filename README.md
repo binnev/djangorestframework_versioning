@@ -4,6 +4,8 @@ Work In Progress!
 Todo: 
 - BUGS: 
   - Allow multiple transforms per version -.-
+- Transform
+  - Let transform also report which serializer(s) it was used by (in VersionSerializer)
 - Version class 
   - Admin page for Versions (no editing, but just to view what is included in each version)
   - Overridable Version class
