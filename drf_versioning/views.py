@@ -31,13 +31,15 @@ class VersionedViewSetMeta(type):
         introduced_in_version = getattr(subclass, "introduced_in", None)
         removed_in_version = getattr(subclass, "removed_in", None)
 
-        # For all subclasses of VersionedViewSet (but not VersionedViewSet itself) ensure that at
-        # least one of introduced_in_version or removed_in_version has been declared.
-        # This is a bit janky because a subclass named VersionedViewSet could bypass this check,
-        # but 1) that's an unlikely edge case and 2) I don't have a better solution right now.
+        # Check that all subclasses of VersionedViewSet (but not VersionedViewSet itself) declare
+        # introduced_in and/or removed_in. This is a bit janky because a subclass named
+        # VersionedViewSet could bypass this check, but 1) that's an unlikely edge case and 2) I
+        # don't have a better solution right now.
         if name != "VersionedViewSet" and not (introduced_in_version or removed_in_version):
             raise VersionsNotDeclaredError(subclass.__name__)
 
+        # if introduced_in and/or removed_in are declared, add the reverse relationship on the
+        # Version instance.
         if removed_in_version:
             removed_in_version.viewsets_removed.append(subclass)
         if introduced_in_version:
