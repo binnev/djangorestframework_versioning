@@ -67,3 +67,12 @@ class YetAnotherThingViewSet(VersionedViewSet, viewsets.ModelViewSet):
     def get_name(self, request, *args, **kwargs):
         obj = self.get_object()
         return Response(data={"name": obj.name})
+
+
+class UnversionedThingViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = ThingSerializer
+    queryset = Thing.objects.all()
+
+    @versioned_view(introduced_in=versions.VERSION_2_0_0, removed_in=versions.VERSION_2_2_0)
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)

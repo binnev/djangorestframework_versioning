@@ -141,6 +141,31 @@ def test_thing3_viewset(request_method, url, request_version, expected_status_co
     assert response.status_code == expected_status_code
 
 
+@pytest.mark.parametrize(
+    "request_method, url, request_version, expected_status_code",
+    [
+        # viewset is not versioned, so by default its methods should be available for all versions
+        ("get", "/thing4/", "1.0.0", 200),
+        ("get", "/thing4/", "2.0.0", 200),
+        ("get", "/thing4/", "2.1.0", 200),
+        ("get", "/thing4/", "2.2.0", 200),
+        ("get", "/thing4/666/", "1.0.0", 404),  # retrieve method not introduced yet
+        ("get", "/thing4/666/", "2.0.0", 200),
+        ("get", "/thing4/666/", "2.1.0", 200),
+        ("get", "/thing4/666/", "2.2.0", 404),  # retrieve method removed in this version
+    ],
+)
+def test_unversioned_thing_viewset(request_method, url, request_version, expected_status_code):
+    mixer.blend(Thing, id=666)
+    client = APIClient()
+    body = {"name": "foo", "number": 420}
+    method = getattr(client, request_method)
+    response = method(
+        url, HTTP_ACCEPT=f"application/json; version={request_version}", data=body, format="json"
+    )
+    assert response.status_code == expected_status_code
+
+
 def test_versioned_viewset_meta():
     v420 = Version("4.20")
     v69 = Version("6.9")
