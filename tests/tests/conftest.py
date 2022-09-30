@@ -25,7 +25,7 @@ def patch_settings():
 @pytest.fixture(autouse=True)
 def stop___hammertime(request, monkeypatch):
     """
-    decorate your test with @pytest.mark.no_back_to_the_future if you want to disable this fixture
+    decorate your test with @pytest.mark.no_hammertime if you want to disable this fixture
     """
     if "no_hammertime" in request.keywords:
         return
