@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import pytest
 from dateutil.parser import parse
 from django.utils import timezone
+from redbreast.testing import parametrize, testparams, assert_dicts_equal
 from rest_framework import serializers
 
 from drf_versioning.transform import Transform, AddField
@@ -21,45 +22,38 @@ class MockRequest:
     version: Version
 
 
-@pytest.mark.parametrize(
-    "version, expected_data",
+class AddAge(AddField):
+    """The 'age' field was added in v2. This transform removes it for versions < 2"""
+
+    field_name = "age"
+    version = Version("2")
+
+
+@parametrize(
+    param := testparams("version", "expected_data"),
     [
-        (
-            versions.VERSION_1_0_0,  # todo: should raise 404 as Thing model not introduced yet.
-            dict(
-                id=1,
-                name="bar",
-            ),
+        param(
+            version=versions.VERSION_1_0_0,
+            expected_data=dict(id=1, name="bar"),
         ),
-        (
-            versions.VERSION_2_0_0,
-            dict(
-                id=1,
-                name="bar",
-            ),
+        param(
+            version=versions.VERSION_2_0_0,
+            expected_data=dict(id=1, name="bar"),
         ),
-        (
-            versions.VERSION_2_1_0,
-            dict(
-                id=1,
-                name="bar",
-                number=420,
-            ),
+        param(
+            version=versions.VERSION_2_1_0,
+            expected_data=dict(id=1, name="bar", number=420),
         ),
-        (
-            versions.VERSION_2_2_0,
-            dict(
-                id=1,
-                name="bar",
-                number=420,
-                status="OK",
-                date_updated="2010-01-01T01:01:01Z",
+        param(
+            version=versions.VERSION_2_2_0,
+            expected_data=dict(
+                id=1, name="bar", number=420, status="OK", date_updated="2010-01-01T01:01:01Z"
             ),
         ),
     ],
 )
-def test_thing_serializer_to_representation(version, expected_data):
-    request = MockRequest(version=version)
+def test_thing_serializer_to_representation(param):
+    request = MockRequest(version=param.version)
     thing = Thing.objects.create(
         id=1,
         name="bar",
@@ -68,46 +62,48 @@ def test_thing_serializer_to_representation(version, expected_data):
     )
     assert thing.date_updated.year == timezone.now().year == 2010
     serializer = ThingSerializer(instance=thing, context={"request": request})
-    assert serializer.data == expected_data
+    assert serializer.data == param.expected_data
 
 
-@pytest.mark.parametrize(
-    "version, post_data, expected_field_values",
+@parametrize(
+    param := testparams("version", "post_data", "expected_field_values"),
     [
-        (
-            versions.VERSION_1_0_0,
-            dict(name="bar"),
-            dict(name="bar"),
+        param(
+            version=versions.VERSION_1_0_0,
+            post_data=dict(name="bar"),
+            expected_field_values=dict(name="bar"),
         ),
-        (
-            versions.VERSION_2_0_0,
-            dict(name="bar"),
-            dict(name="bar"),
+        param(
+            version=versions.VERSION_2_0_0,
+            post_data=dict(name="bar"),
+            expected_field_values=dict(name="bar"),
         ),
-        (
-            versions.VERSION_2_1_0,
-            dict(name="bar"),
-            dict(name="bar", number=0),
+        param(
+            version=versions.VERSION_2_1_0,
+            post_data=dict(name="bar"),
+            expected_field_values=dict(name="bar", number=0),
         ),
-        (
-            versions.VERSION_2_1_0,
-            dict(name="bar", number=420, status="OK"),
-            dict(name="bar", number=420),
+        param(
+            version=versions.VERSION_2_1_0,
+            post_data=dict(name="bar", number=420, status="OK"),
+            expected_field_values=dict(name="bar", number=420),
         ),
-        (
-            versions.VERSION_2_2_0,
-            dict(name="bar", number=420, status="OK", date_updated="2022-09-02T12:00:00"),
-            dict(name="bar", number=420, status="OK", date_updated=parse("2022-09-02T12:00:00Z")),
+        param(
+            version=versions.VERSION_2_2_0,
+            post_data=dict(name="bar", number=420, status="OK", date_updated="2022-09-02T12:00:00"),
+            expected_field_values=dict(
+                name="bar", number=420, status="OK", date_updated=parse("2022-09-02T12:00:00Z")
+            ),
         ),
     ],
 )
-def test_thing_serializer_to_internal_value(version, post_data, expected_field_values):
-    request = MockRequest(version=version)
-    serializer = ThingSerializer(data=post_data, context={"request": request})
+def test_thing_serializer_to_internal_value(param):
+    request = MockRequest(version=param.version)
+    serializer = ThingSerializer(data=param.post_data, context={"request": request})
     serializer.is_valid(raise_exception=True)
     thing = serializer.save()
 
-    for field_name, expected_value in expected_field_values.items():
+    for field_name, expected_value in param.expected_field_values.items():
         assert getattr(thing, field_name) == expected_value
 
 
@@ -119,48 +115,62 @@ def test_version_serializer():
     v.view_methods_removed = [views.OtherThingViewSet.get_name]
     v.transforms = [transforms.ThingTransformAddNumber]
     data = VersionSerializer(instance=v).data
-    assert data == {
-        "version": "6.9",
-        "notes": ["some text"],
-        "models": ["Added Thing.number field."],
-        "views": {
-            "endpoints_introduced": ["ThingViewSet"],
-            "endpoints_removed": ["OtherThingViewSet"],
-            "actions_introduced": ["ThingViewSet.list"],
-            "actions_removed": ["OtherThingViewSet.get_name"],
+    assert_dicts_equal(
+        data,
+        {
+            "version": "6.9",
+            "notes": ["some text"],
+            "models": ["Added Thing.number field."],
+            "views": {
+                "endpoints_introduced": ["ThingViewSet"],
+                "endpoints_removed": ["OtherThingViewSet"],
+                "actions_introduced": ["ThingViewSet.list"],
+                "actions_removed": ["OtherThingViewSet.get_name"],
+            },
         },
-    }
+    )
 
 
-@pytest.mark.parametrize(
-    "request_version, expected_data_parent",
+@parametrize(
+    param := testparams("request_version", "expected_data"),
     [
-        (
-            None,
-            {
+        param(
+            description=(
+                "No request version passed. Should default to most up-to-date version of output, "
+                "which means the new field should be outputted."
+            ),
+            request_version=None,
+            expected_data={
                 "name": "Jane",
                 "age": 69,
                 "child": {"name": "Billy", "age": 12},
             },
         ),
-        (
-            Version("1"),
-            {
+        param(
+            description=(
+                "request.version < transform.version. The new field should not be outputted."
+            ),
+            request_version=Version("1"),
+            expected_data={
                 "name": "Jane",
                 "child": {"name": "Billy"},
             },
         ),
-        (
-            Version("2"),
-            {
+        param(
+            description=(
+                "request.version == transform.version. The new field should be outputted."
+            ),
+            request_version=Version("2"),
+            expected_data={
                 "name": "Jane",
                 "age": 69,
                 "child": {"name": "Billy", "age": 12},
             },
         ),
-        (
-            Version("3"),
-            {
+        param(
+            description=("request.version > transform.version. The new field should be outputted."),
+            request_version=Version("3"),
+            expected_data={
                 "name": "Jane",
                 "age": 69,
                 "child": {"name": "Billy", "age": 12},
@@ -168,13 +178,7 @@ def test_version_serializer():
         ),
     ],
 )
-def test_inline_serialization(request_version, expected_data_parent):
-    class AddAge(AddField):
-        """The 'age' field was added in v2. This transform removes it for versions < 2"""
-
-        field_name = "age"
-        version = Version("2")
-
+def test_inline_serialization(param):
     @dataclass
     class Child:
         name: str
@@ -199,40 +203,44 @@ def test_inline_serialization(request_version, expected_data_parent):
 
     child = Child(name="Billy", age=12)
     parent = Parent(name="Jane", age=69, child=child)
-    request = MockRequest(version=request_version)
-    assert ParentSerializer(parent, context={"request": request}).data == expected_data_parent
+    request = MockRequest(version=param.request_version)
+    assert ParentSerializer(parent, context={"request": request}).data == param.expected_data
 
 
-@pytest.mark.parametrize(
-    "request_version, expected_data_parent",
+@parametrize(
+    param := testparams("request_version", "expected_data"),
     [
-        (
-            Version("1"),
-            {
+        param(
+            description="request.version < transform.version",
+            request_version=Version("1"),
+            expected_data={
                 "age": 69,
                 "name": "Jane",
                 "child": {"name": "Billy"},
             },
         ),
-        (
-            None,
-            {
+        param(
+            description="request.version unspecified.",
+            request_version=None,
+            expected_data={
                 "name": "Jane",
                 "age": 69,
                 "child": {"name": "Billy", "age": 12},
             },
         ),
-        (
-            Version("2"),
-            {
+        param(
+            description="request.version == transform.version.",
+            request_version=Version("2"),
+            expected_data={
                 "name": "Jane",
                 "age": 69,
                 "child": {"name": "Billy", "age": 12},
             },
         ),
-        (
-            Version("3"),
-            {
+        param(
+            description="request.version > transform.version",
+            request_version=Version("3"),
+            expected_data={
                 "name": "Jane",
                 "age": 69,
                 "child": {"name": "Billy", "age": 12},
@@ -240,15 +248,7 @@ def test_inline_serialization(request_version, expected_data_parent):
         ),
     ],
 )
-def test_inline_serialization_when_parent_serializer_is_not_a_versioningserializer(
-    request_version, expected_data_parent
-):
-    class AddAge(AddField):
-        """The 'age' field was added in v2. This transform removes it for versions < 2"""
-
-        field_name = "age"
-        version = Version("2")
-
+def test_inline_serialization_when_parent_serializer_is_not_a_versioningserializer(param):
     @dataclass
     class Child:
         name: str
@@ -272,57 +272,11 @@ def test_inline_serialization_when_parent_serializer_is_not_a_versioningserializ
 
     child = Child(name="Billy", age=12)
     parent = Parent(name="Jane", age=69, child=child)
-    request = MockRequest(version=request_version)
-    assert ParentSerializer(parent, context={"request": request}).data == expected_data_parent
-
-
-def test_inline_serialization_without_context_results_in_most_recent_data():
-    class AddAge(AddField):
-        """The 'age' field was added in v2. This transform removes it for versions < 2"""
-
-        field_name = "age"
-        version = Version("2")
-
-    @dataclass
-    class Child:
-        name: str
-        age: int
-
-    @dataclass
-    class Parent:
-        name: str
-        age: int
-        child: Child
-
-    class ChildSerializer(VersioningSerializer):
-        name = serializers.CharField()
-        age = serializers.IntegerField()
-        transforms = [AddAge]
-
-    class ParentSerializer(VersioningSerializer):
-        name = serializers.CharField()
-        age = serializers.IntegerField()
-        child = ChildSerializer()
-        transforms = [AddAge]
-
-    child = Child(name="Billy", age=12)
-    parent = Parent(name="Jane", age=69, child=child)
-
-    # passing no context should result in the most up-to-date output
-    assert ParentSerializer(instance=parent).data == {
-        "name": "Jane",
-        "age": 69,
-        "child": {"name": "Billy", "age": 12},
-    }
+    request = MockRequest(version=param.request_version)
+    assert ParentSerializer(parent, context={"request": request}).data == param.expected_data
 
 
 def test_inline_serialization_with_many():
-    class AddAge(AddField):
-        """The 'age' field was added in v2. This transform removes it for versions < 2"""
-
-        field_name = "age"
-        version = Version("2")
-
     @dataclass
     class Child:
         name: str
@@ -357,4 +311,38 @@ def test_inline_serialization_with_many():
             {"name": "Jimmy", "age": 13},
             {"name": "Billy", "age": 12},
         ],
+    }
+
+
+def test_inline_serialization_without_context_results_in_most_recent_data():
+    @dataclass
+    class Child:
+        name: str
+        age: int
+
+    @dataclass
+    class Parent:
+        name: str
+        age: int
+        child: Child
+
+    class ChildSerializer(VersioningSerializer):
+        name = serializers.CharField()
+        age = serializers.IntegerField()
+        transforms = [AddAge]
+
+    class ParentSerializer(VersioningSerializer):
+        name = serializers.CharField()
+        age = serializers.IntegerField()
+        child = ChildSerializer()
+        transforms = [AddAge]
+
+    child = Child(name="Billy", age=12)
+    parent = Parent(name="Jane", age=69, child=child)
+
+    # passing no context should result in the most up-to-date output
+    assert ParentSerializer(instance=parent).data == {
+        "name": "Jane",
+        "age": 69,
+        "child": {"name": "Billy", "age": 12},
     }
