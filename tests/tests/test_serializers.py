@@ -79,6 +79,7 @@ class ParentSerializer(VersioningSerializer):
     ],
 )
 def test_thing_serializer_to_representation(param):
+
     request = MockRequest(version=param.version)
     thing = Thing.objects.create(
         id=1,
