@@ -133,16 +133,8 @@ def test_version_serializer():
 
 
 @pytest.mark.parametrize(
-    "request_version, expected_data_parent, expected_data_child",
+    "request_version, expected_data_parent",
     [
-        (
-            Version("1"),
-            {
-                "name": "Jane",
-                "child": {"name": "Billy"},
-            },
-            {"name": "Billy"},
-        ),
         (
             None,
             {
@@ -150,7 +142,13 @@ def test_version_serializer():
                 "age": 69,
                 "child": {"name": "Billy", "age": 12},
             },
-            {"name": "Billy", "age": 12},
+        ),
+        (
+            Version("1"),
+            {
+                "name": "Jane",
+                "child": {"name": "Billy"},
+            },
         ),
         (
             Version("2"),
@@ -159,7 +157,6 @@ def test_version_serializer():
                 "age": 69,
                 "child": {"name": "Billy", "age": 12},
             },
-            {"name": "Billy", "age": 12},
         ),
         (
             Version("3"),
@@ -168,12 +165,11 @@ def test_version_serializer():
                 "age": 69,
                 "child": {"name": "Billy", "age": 12},
             },
-            {"name": "Billy", "age": 12},
         ),
     ],
 )
-def test_inline_serialization(request_version, expected_data_parent, expected_data_child):
-    class AddAgeFieldEverywhere(AddField):
+def test_inline_serialization(request_version, expected_data_parent):
+    class AddAge(AddField):
         """The 'age' field was added in v2. This transform removes it for versions < 2"""
 
         field_name = "age"
@@ -193,23 +189,61 @@ def test_inline_serialization(request_version, expected_data_parent, expected_da
     class ChildSerializer(VersioningSerializer):
         name = serializers.CharField()
         age = serializers.IntegerField()
-        transforms = [AddAgeFieldEverywhere]
+        transforms = [AddAge]
 
     class ParentSerializer(VersioningSerializer):
         name = serializers.CharField()
         age = serializers.IntegerField()
         child = ChildSerializer()
-        transforms = [AddAgeFieldEverywhere]
+        transforms = [AddAge]
 
     child = Child(name="Billy", age=12)
     parent = Parent(name="Jane", age=69, child=child)
     request = MockRequest(version=request_version)
-    assert ChildSerializer(child, context={"request": request}).data == expected_data_child
     assert ParentSerializer(parent, context={"request": request}).data == expected_data_parent
 
 
-def test_inline_serialization_without_context_results_in_most_recent_data():
-    class AddAgeFieldEverywhere(AddField):
+@pytest.mark.parametrize(
+    "request_version, expected_data_parent",
+    [
+        (
+            Version("1"),
+            {
+                "age": 69,
+                "name": "Jane",
+                "child": {"name": "Billy"},
+            },
+        ),
+        (
+            None,
+            {
+                "name": "Jane",
+                "age": 69,
+                "child": {"name": "Billy", "age": 12},
+            },
+        ),
+        (
+            Version("2"),
+            {
+                "name": "Jane",
+                "age": 69,
+                "child": {"name": "Billy", "age": 12},
+            },
+        ),
+        (
+            Version("3"),
+            {
+                "name": "Jane",
+                "age": 69,
+                "child": {"name": "Billy", "age": 12},
+            },
+        ),
+    ],
+)
+def test_inline_serialization_when_parent_serializer_is_not_a_versioningserializer(
+    request_version, expected_data_parent
+):
+    class AddAge(AddField):
         """The 'age' field was added in v2. This transform removes it for versions < 2"""
 
         field_name = "age"
@@ -229,21 +263,98 @@ def test_inline_serialization_without_context_results_in_most_recent_data():
     class ChildSerializer(VersioningSerializer):
         name = serializers.CharField()
         age = serializers.IntegerField()
-        transforms = [AddAgeFieldEverywhere]
+        transforms = [AddAge]
+
+    class ParentSerializer(serializers.Serializer):
+        name = serializers.CharField()
+        age = serializers.IntegerField()
+        child = ChildSerializer()
+
+    child = Child(name="Billy", age=12)
+    parent = Parent(name="Jane", age=69, child=child)
+    request = MockRequest(version=request_version)
+    assert ParentSerializer(parent, context={"request": request}).data == expected_data_parent
+
+
+def test_inline_serialization_without_context_results_in_most_recent_data():
+    class AddAge(AddField):
+        """The 'age' field was added in v2. This transform removes it for versions < 2"""
+
+        field_name = "age"
+        version = Version("2")
+
+    @dataclass
+    class Child:
+        name: str
+        age: int
+
+    @dataclass
+    class Parent:
+        name: str
+        age: int
+        child: Child
+
+    class ChildSerializer(VersioningSerializer):
+        name = serializers.CharField()
+        age = serializers.IntegerField()
+        transforms = [AddAge]
 
     class ParentSerializer(VersioningSerializer):
         name = serializers.CharField()
         age = serializers.IntegerField()
         child = ChildSerializer()
-        transforms = [AddAgeFieldEverywhere]
+        transforms = [AddAge]
 
     child = Child(name="Billy", age=12)
     parent = Parent(name="Jane", age=69, child=child)
 
     # passing no context should result in the most up-to-date output
-    assert ChildSerializer(instance=child).data == {"name": "Billy", "age": 12}
     assert ParentSerializer(instance=parent).data == {
         "name": "Jane",
         "age": 69,
         "child": {"name": "Billy", "age": 12},
+    }
+
+
+def test_inline_serialization_with_many():
+    class AddAge(AddField):
+        """The 'age' field was added in v2. This transform removes it for versions < 2"""
+
+        field_name = "age"
+        version = Version("2")
+
+    @dataclass
+    class Child:
+        name: str
+        age: int
+
+    @dataclass
+    class Parent:
+        name: str
+        age: int
+        children: list[Child]
+
+    class ChildSerializer(VersioningSerializer):
+        name = serializers.CharField()
+        age = serializers.IntegerField()
+        transforms = [AddAge]
+
+    class ParentSerializer(VersioningSerializer):
+        name = serializers.CharField()
+        age = serializers.IntegerField()
+        children = ChildSerializer(many=True)
+        transforms = [AddAge]
+
+    billy = Child(name="Billy", age=12)
+    jimmy = Child(name="Jimmy", age=13)
+    parent = Parent(name="Jane", age=69, children=[jimmy, billy])
+
+    # passing no context should result in the most up-to-date output
+    assert ParentSerializer(instance=parent).data == {
+        "name": "Jane",
+        "age": 69,
+        "children": [
+            {"name": "Jimmy", "age": 13},
+            {"name": "Billy", "age": 12},
+        ],
     }
