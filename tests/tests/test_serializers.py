@@ -22,6 +22,19 @@ class MockRequest:
     version: Version
 
 
+@dataclass
+class Child:
+    name: str
+    age: int
+
+
+@dataclass
+class Parent:
+    name: str
+    age: int
+    child: Child
+
+
 class AddAge(AddField):
     """The 'age' field was added in v2. This transform removes it for versions < 2"""
 
@@ -179,17 +192,6 @@ def test_version_serializer():
     ],
 )
 def test_inline_serialization(param):
-    @dataclass
-    class Child:
-        name: str
-        age: int
-
-    @dataclass
-    class Parent:
-        name: str
-        age: int
-        child: Child
-
     class ChildSerializer(VersioningSerializer):
         name = serializers.CharField()
         age = serializers.IntegerField()
@@ -249,17 +251,6 @@ def test_inline_serialization(param):
     ],
 )
 def test_inline_serialization_when_parent_serializer_is_not_a_versioningserializer(param):
-    @dataclass
-    class Child:
-        name: str
-        age: int
-
-    @dataclass
-    class Parent:
-        name: str
-        age: int
-        child: Child
-
     class ChildSerializer(VersioningSerializer):
         name = serializers.CharField()
         age = serializers.IntegerField()
@@ -277,11 +268,6 @@ def test_inline_serialization_when_parent_serializer_is_not_a_versioningserializ
 
 
 def test_inline_serialization_with_many():
-    @dataclass
-    class Child:
-        name: str
-        age: int
-
     @dataclass
     class Parent:
         name: str
@@ -315,17 +301,6 @@ def test_inline_serialization_with_many():
 
 
 def test_inline_serialization_without_context_results_in_most_recent_data():
-    @dataclass
-    class Child:
-        name: str
-        age: int
-
-    @dataclass
-    class Parent:
-        name: str
-        age: int
-        child: Child
-
     class ChildSerializer(VersioningSerializer):
         name = serializers.CharField()
         age = serializers.IntegerField()
