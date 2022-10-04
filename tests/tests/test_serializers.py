@@ -73,7 +73,7 @@ class ParentSerializer(VersioningSerializer):
         param(
             version=versions.VERSION_2_2_0,
             expected_data=dict(
-                id=1, name="bar", number=420, status="OK", date_updated="2010-01-01T01:01:01Z"
+                id=1, name="bar", number=420, status="OK", date_updated="2010-01-02T03:04:05Z"
             ),
         ),
     ],
