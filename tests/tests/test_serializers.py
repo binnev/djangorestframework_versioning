@@ -3,7 +3,10 @@ from dataclasses import dataclass
 import pytest
 from dateutil.parser import parse
 from django.utils import timezone
+from rest_framework import serializers
 
+from drf_versioning.transform import Transform, AddField
+from drf_versioning.transform.serializers import VersioningSerializer
 from drf_versioning.version import Version
 from drf_versioning.version.serializers import VersionSerializer
 from tests import versions, views, transforms
@@ -126,4 +129,121 @@ def test_version_serializer():
             "actions_introduced": ["ThingViewSet.list"],
             "actions_removed": ["OtherThingViewSet.get_name"],
         },
+    }
+
+
+@pytest.mark.parametrize(
+    "request_version, expected_data_parent, expected_data_child",
+    [
+        (
+            Version("1"),
+            {
+                "name": "Jane",
+                "child": {"name": "Billy"},
+            },
+            {"name": "Billy"},
+        ),
+        (
+            None,
+            {
+                "name": "Jane",
+                "age": 69,
+                "child": {"name": "Billy", "age": 12},
+            },
+            {"name": "Billy", "age": 12},
+        ),
+        (
+            Version("2"),
+            {
+                "name": "Jane",
+                "age": 69,
+                "child": {"name": "Billy", "age": 12},
+            },
+            {"name": "Billy", "age": 12},
+        ),
+        (
+            Version("3"),
+            {
+                "name": "Jane",
+                "age": 69,
+                "child": {"name": "Billy", "age": 12},
+            },
+            {"name": "Billy", "age": 12},
+        ),
+    ],
+)
+def test_inline_serialization(request_version, expected_data_parent, expected_data_child):
+    class AddAgeFieldEverywhere(AddField):
+        """The 'age' field was added in v2. This transform removes it for versions < 2"""
+
+        field_name = "age"
+        version = Version("2")
+
+    @dataclass
+    class Child:
+        name: str
+        age: int
+
+    @dataclass
+    class Parent:
+        name: str
+        age: int
+        child: Child
+
+    class ChildSerializer(VersioningSerializer):
+        name = serializers.CharField()
+        age = serializers.IntegerField()
+        transforms = [AddAgeFieldEverywhere]
+
+    class ParentSerializer(VersioningSerializer):
+        name = serializers.CharField()
+        age = serializers.IntegerField()
+        child = ChildSerializer()
+        transforms = [AddAgeFieldEverywhere]
+
+    child = Child(name="Billy", age=12)
+    parent = Parent(name="Jane", age=69, child=child)
+    request = MockRequest(version=request_version)
+    assert ChildSerializer(child, context={"request": request}).data == expected_data_child
+    assert ParentSerializer(parent, context={"request": request}).data == expected_data_parent
+
+
+def test_inline_serialization_without_context_results_in_most_recent_data():
+    class AddAgeFieldEverywhere(AddField):
+        """The 'age' field was added in v2. This transform removes it for versions < 2"""
+
+        field_name = "age"
+        version = Version("2")
+
+    @dataclass
+    class Child:
+        name: str
+        age: int
+
+    @dataclass
+    class Parent:
+        name: str
+        age: int
+        child: Child
+
+    class ChildSerializer(VersioningSerializer):
+        name = serializers.CharField()
+        age = serializers.IntegerField()
+        transforms = [AddAgeFieldEverywhere]
+
+    class ParentSerializer(VersioningSerializer):
+        name = serializers.CharField()
+        age = serializers.IntegerField()
+        child = ChildSerializer()
+        transforms = [AddAgeFieldEverywhere]
+
+    child = Child(name="Billy", age=12)
+    parent = Parent(name="Jane", age=69, child=child)
+
+    # passing no context should result in the most up-to-date output
+    assert ChildSerializer(instance=child).data == {"name": "Billy", "age": 12}
+    assert ParentSerializer(instance=parent).data == {
+        "name": "Jane",
+        "age": 69,
+        "child": {"name": "Billy", "age": 12},
     }
