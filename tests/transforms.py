@@ -18,3 +18,9 @@ class ThingAddDateUpdated(AddField):
     field_name = "date_updated"
     description = "Added Thing.date_updated field"
     version = versions.VERSION_2_2_0
+
+
+class PersonAddBirthday(AddField):
+    field_name = "birthday"
+    description = "Added Person.birthday"
+    version = versions.VERSION_2_3_0
