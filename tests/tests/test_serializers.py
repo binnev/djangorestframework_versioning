@@ -11,8 +11,8 @@ from drf_versioning.transform.serializers import VersioningSerializer
 from drf_versioning.version import Version
 from drf_versioning.version.serializers import VersionSerializer
 from tests import versions, views, transforms
-from tests.models import Thing
-from tests.serializers import ThingSerializer
+from tests.models import Thing, Person
+from tests.serializers import ThingSerializer, PersonSerializer
 
 pytestmark = pytest.mark.django_db
 
@@ -329,3 +329,122 @@ def test_inline_serialization_without_context_results_in_most_recent_data():
         "age": 69,
         "child": {"name": "Billy", "age": 12},
     }
+
+
+@parametrize(
+    param := testparams("name", "request_version", "expected_output"),
+    [
+        param(
+            name="charles",
+            request_version=Version("2"),
+            expected_output=dict(
+                name="charles",
+                father=dict(name="david"),
+                mother=dict(name="ada"),
+                children=[],
+            ),
+        ),
+        param(
+            name="charles",
+            request_version=Version("3"),
+            expected_output=dict(
+                name="charles",
+                birthday="1989-08-25",
+                father=dict(name="david", birthday="1957-03-03"),
+                mother=dict(name="ada", birthday="1960-05-23"),
+                children=[],
+            ),
+        ),
+        param(
+            name="david",
+            request_version=Version("2"),
+            expected_output=dict(
+                name="david",
+                father=dict(name="tommy"),
+                mother=dict(name="grace"),
+                children=[
+                    dict(name="charles", children=[]),
+                    dict(name="john", children=[]),
+                    dict(name="finn", children=[]),
+                ],
+            ),
+        ),
+        param(
+            name="david",
+            request_version=Version("3"),
+            expected_output=dict(
+                name="david",
+                birthday="1957-03-03",
+                father=dict(name="tommy", birthday="1920-01-01"),
+                mother=dict(name="grace", birthday="1919-01-01"),
+                children=[
+                    dict(name="charles", birthday="1989-08-25", children=[]),
+                    dict(name="john", birthday="1991-10-22", children=[]),
+                    dict(name="finn", birthday="1994-06-24", children=[]),
+                ],
+            ),
+        ),
+        param(
+            name="tommy",
+            request_version=Version("2"),
+            expected_output=dict(
+                name="tommy",
+                father=None,
+                mother=None,
+                children=[
+                    dict(
+                        name="david",
+                        children=[
+                            dict(name="charles"),
+                            dict(name="john"),
+                            dict(name="finn"),
+                        ],
+                    ),
+                    dict(name="arthur", children=[]),
+                    dict(name="polly", children=[]),
+                ],
+            ),
+        ),
+        param(
+            name="tommy",
+            request_version=Version("3"),
+            expected_output=dict(
+                name="tommy",
+                birthday="1920-01-01",
+                father=None,
+                mother=None,
+                children=[
+                    dict(
+                        name="david",
+                        birthday="1957-03-03",
+                        children=[
+                            dict(name="charles", birthday="1989-08-25"),
+                            dict(name="john", birthday="1991-10-22"),
+                            dict(name="finn", birthday="1994-06-24"),
+                        ],
+                    ),
+                    dict(name="arthur", birthday="1955-01-01", children=[]),
+                    dict(name="polly", birthday="1960-01-01", children=[]),
+                ],
+            ),
+        ),
+    ],
+)
+@pytest.mark.django_db
+def test_inline_serialization2(param):
+    tommy = Person.objects.create(name="tommy", birthday="1920-01-01")
+    grace = Person.objects.create(name="grace", birthday="1919-01-01")
+    david = Person.objects.create(name="david", birthday="1957-03-03", father=tommy, mother=grace)
+    arthur = Person.objects.create(name="arthur", birthday="1955-01-01", father=tommy, mother=grace)
+    polly = Person.objects.create(name="polly", birthday="1960-01-01", father=tommy, mother=grace)
+    ada = Person.objects.create(name="ada", birthday="1960-05-23")
+    charles = Person.objects.create(name="charles", birthday="1989-08-25", father=david, mother=ada)
+    john = Person.objects.create(name="john", birthday="1991-10-22", father=david, mother=ada)
+    finn = Person.objects.create(name="finn", birthday="1994-06-24", father=david, mother=ada)
+
+    person = Person.objects.get(name=param.name)
+    request = MockRequest(version=param.request_version)
+    assert_dicts_equal(
+        PersonSerializer(person, context={"request": request}).data,
+        param.expected_output,
+    )
