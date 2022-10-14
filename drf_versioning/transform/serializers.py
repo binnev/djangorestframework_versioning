@@ -19,7 +19,7 @@ def import_transforms(path: str) -> tuple[type[Transform]]:
     return transforms
 
 
-class VersioningSerializer(serializers.Serializer):
+class VersionedSerializer(serializers.Serializer):
     transforms: tuple[type[Transform]] = None
 
     def __init__(self, *args, **kwargs):

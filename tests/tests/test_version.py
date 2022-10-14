@@ -1,4 +1,5 @@
 import operator
+from unittest.mock import patch
 
 import pytest
 from packaging.version import InvalidVersion
@@ -31,13 +32,19 @@ def test_get_sad(input, expected_exception):
 @pytest.mark.parametrize(
     "settings_default, expected_version",
     [
-        ("2.0.0", versions.VERSION_2_0_0),
-        ("earliest", versions.VERSION_0_0_1),
-        ("latest", versions.VERSION_2_2_0),
+        ("2.0.0", Version("2.0")),
+        ("earliest", Version("1.0")),
+        ("latest", Version("3.0")),
     ],
 )
-def test_get_default_happy(settings_default, expected_version, patch_settings):
+@patch("drf_versioning.version.base.Version.list")
+def test_get_default_happy(mock, settings_default, expected_version, patch_settings):
     """The user can specify a specific version as default, or use "earliest" / "latest"."""
+    mock.return_value = [
+        Version("1.0"),
+        Version("2.0"),
+        Version("3.0"),
+    ]
     with patch_settings(DEFAULT_VERSION=settings_default):
         assert Version.get_default() == expected_version
 

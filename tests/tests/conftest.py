@@ -25,12 +25,12 @@ def patch_settings():
 @pytest.fixture(autouse=True)
 def stop___hammertime(request, monkeypatch):
     """
-    decorate your test with @pytest.mark.no_back_to_the_future if you want to disable this fixture
+    decorate your test with @pytest.mark.cant_touch_this if you want to disable this fixture
     """
-    if "no_hammertime" in request.keywords:
+    if "cant_touch_this" in request.keywords:
         return
 
     def earlier():
-        return timezone.datetime(2010, 1, 1, 1, 1, 1, tzinfo=tz.UTC)
+        return timezone.datetime(2010, 1, 2, 3, 4, 5, tzinfo=tz.UTC)
 
     monkeypatch.setattr(timezone, "now", earlier)
