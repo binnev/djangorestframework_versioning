@@ -1,10 +1,10 @@
 from rest_framework import serializers
 from tests import transforms
-from drf_versioning.transform.serializers import VersioningSerializer, import_transforms
+from drf_versioning.transform.serializers import VersionedSerializer, import_transforms
 from tests.models import Thing, Person
 
 
-class ThingSerializer(VersioningSerializer, serializers.ModelSerializer):
+class ThingSerializer(VersionedSerializer, serializers.ModelSerializer):
     transforms = [
         transforms.ThingTransformAddNumber,
         transforms.ThingAddDateUpdated,
@@ -22,7 +22,7 @@ class ThingSerializer(VersioningSerializer, serializers.ModelSerializer):
         ]
 
 
-class GrandChildSerializer(VersioningSerializer, serializers.ModelSerializer):
+class GrandChildSerializer(VersionedSerializer, serializers.ModelSerializer):
     transforms = [
         transforms.PersonAddBirthday,
     ]
@@ -35,7 +35,7 @@ class GrandChildSerializer(VersioningSerializer, serializers.ModelSerializer):
         ]
 
 
-class ChildSerializer(VersioningSerializer, serializers.ModelSerializer):
+class ChildSerializer(VersionedSerializer, serializers.ModelSerializer):
     children = GrandChildSerializer(many=True)
     transforms = [
         transforms.PersonAddBirthday,
@@ -50,7 +50,7 @@ class ChildSerializer(VersioningSerializer, serializers.ModelSerializer):
         ]
 
 
-class ParentSerializer(VersioningSerializer, serializers.ModelSerializer):
+class ParentSerializer(VersionedSerializer, serializers.ModelSerializer):
     transforms = [
         transforms.PersonAddBirthday,
     ]
@@ -63,7 +63,7 @@ class ParentSerializer(VersioningSerializer, serializers.ModelSerializer):
         ]
 
 
-class PersonSerializer(VersioningSerializer, serializers.ModelSerializer):
+class PersonSerializer(VersionedSerializer, serializers.ModelSerializer):
     father = ParentSerializer()
     mother = ParentSerializer()
     children = ChildSerializer(many=True)

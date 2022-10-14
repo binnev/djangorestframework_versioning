@@ -7,7 +7,7 @@ from redbreast.testing import parametrize, testparams, assert_dicts_equal
 from rest_framework import serializers
 
 from drf_versioning.transform import Transform, AddField
-from drf_versioning.transform.serializers import VersioningSerializer
+from drf_versioning.transform.serializers import VersionedSerializer
 from drf_versioning.version import Version
 from drf_versioning.version.serializers import VersionSerializer
 from tests import versions, views, transforms
@@ -42,13 +42,13 @@ class AddAge(AddField):
     version = Version("2")
 
 
-class ChildSerializer(VersioningSerializer):
+class ChildSerializer(VersionedSerializer):
     name = serializers.CharField()
     age = serializers.IntegerField()
     transforms = [AddAge]
 
 
-class ParentSerializer(VersioningSerializer):
+class ParentSerializer(VersionedSerializer):
     name = serializers.CharField()
     age = serializers.IntegerField()
     child = ChildSerializer()
@@ -239,7 +239,7 @@ def test_inline_serialization(param):
         ),
     ],
 )
-def test_inline_serialization_when_parent_serializer_is_not_a_versioningserializer(param):
+def test_inline_serialization_when_parent_serializer_is_not_a_VersionedSerializer(param):
     class ParentSerializer(serializers.Serializer):
         name = serializers.CharField()
         age = serializers.IntegerField()
@@ -306,7 +306,7 @@ def test_inline_serialization_with_many(param):
         age: int
         children: list[Child]
 
-    class ParentSerializer(VersioningSerializer):
+    class ParentSerializer(VersionedSerializer):
         name = serializers.CharField()
         age = serializers.IntegerField()
         children = ChildSerializer(many=True)
