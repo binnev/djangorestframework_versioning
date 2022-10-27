@@ -6,8 +6,8 @@ from django.utils import timezone
 from redbreast.testing import parametrize, testparams, assert_dicts_equal
 from rest_framework import serializers
 
-from drf_versioning.transforms import Transform, AddField
-from drf_versioning.transforms.serializers import VersionedSerializer
+from drf_versioning.serializers import VersionedSerializer
+from drf_versioning.transforms import AddField
 from drf_versioning.versions import Version
 from drf_versioning.versions.serializers import VersionSerializer
 from tests import versions, views, transforms

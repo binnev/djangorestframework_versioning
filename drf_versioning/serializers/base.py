@@ -4,8 +4,8 @@ from importlib import import_module
 from django.http import QueryDict
 from rest_framework import serializers
 
-from . import Transform
 from ..exceptions import TransformsNotDeclaredError
+from ..transforms import Transform
 from ..versions import Version
 
 

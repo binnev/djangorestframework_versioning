@@ -1,7 +1,7 @@
 import pytest
 
 from drf_versioning.exceptions import TransformsNotDeclaredError
-from drf_versioning.transforms.serializers import VersionedSerializer
+from drf_versioning.serializers import VersionedSerializer
 
 
 def test_versioned_serializer_checks_for_transforms_at_instantiation():
