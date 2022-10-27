@@ -1,5 +1,6 @@
 from rest_framework.routers import DefaultRouter
-from . import views
+
+from .versions import views
 
 router = DefaultRouter()
 

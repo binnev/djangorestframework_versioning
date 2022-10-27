@@ -4,7 +4,8 @@ from rest_framework.test import APIRequestFactory, APIClient
 
 from drf_versioning.exceptions import VersionsNotDeclaredError
 from drf_versioning.versions import Version
-from drf_versioning.views import VersionViewSet, VersionedViewSet
+from drf_versioning.versions.views import VersionViewSet
+from drf_versioning.views import VersionedViewSet
 from tests.models import Thing
 
 pytestmark = pytest.mark.django_db
