@@ -1,4 +1,4 @@
-from .base import Transform
+from .transform import Transform
 
 
 class AddField(Transform):

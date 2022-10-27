@@ -18,7 +18,7 @@ class Transform(metaclass=TransformMeta):
     """
 
     description: str  # will be added to version.notes
-    version: Version  # set by Version.__init__
+    version: Version  # will be added to version.transforms
 
     def to_internal_value(self, data: dict, request):
         """Operation performed on incoming data from older request versions"""

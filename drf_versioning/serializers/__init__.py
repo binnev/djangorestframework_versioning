@@ -1,1 +1,1 @@
-from .base import VersionedSerializer
+from .versioned_serializer import VersionedSerializer

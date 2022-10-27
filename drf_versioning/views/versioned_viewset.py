@@ -2,9 +2,9 @@ from typing import Optional
 
 from rest_framework import viewsets
 
-from .decorators import versioned_view
-from .exceptions import VersionsNotDeclaredError
-from .versions import Version
+from ..decorators import versioned_view
+from ..exceptions import VersionsNotDeclaredError
+from ..versions import Version
 
 
 class VersionedViewSetMeta(type):
