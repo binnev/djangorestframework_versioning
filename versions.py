@@ -1,6 +1,11 @@
 """Using Versions to describe the changes in this versioning library -- wow so meta."""
 from drf_versioning.versions import Version
 
+VERSION_2_0_0 = Version(
+    notes=[
+        "Restructured the project to make importing stuff more intuitive.",
+    ]
+)
 VERSION_1_0_0 = Version(
     notes=[
         (
