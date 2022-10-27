@@ -4,7 +4,7 @@ import pytest
 
 from drf_versioning.exceptions import VersionDoesNotExist
 from drf_versioning.middleware import GetDefaultMixin
-from drf_versioning.version import Version
+from drf_versioning.versions import Version
 
 MOCK_VERSION_LIST = [
     Version("4.2.0"),

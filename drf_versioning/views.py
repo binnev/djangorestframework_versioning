@@ -8,8 +8,8 @@ from rest_framework.response import Response
 from .decorators import versioned_view
 from .exceptions import VersionsNotDeclaredError
 from .settings import versioning_settings
-from .version import Version
-from .version.serializers import VersionSerializer
+from .versions import Version
+from .versions.serializers import VersionSerializer
 
 
 class VersionViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):

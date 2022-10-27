@@ -6,7 +6,7 @@ from rest_framework import serializers
 
 from . import Transform
 from ..exceptions import TransformsNotDeclaredError
-from ..version import Version
+from ..versions import Version
 
 
 def import_transforms(path: str) -> tuple[type[Transform]]:

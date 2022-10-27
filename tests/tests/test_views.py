@@ -3,7 +3,7 @@ from mixer.backend.django import mixer
 from rest_framework.test import APIRequestFactory, APIClient
 
 from drf_versioning.exceptions import VersionsNotDeclaredError
-from drf_versioning.version import Version
+from drf_versioning.versions import Version
 from drf_versioning.views import VersionViewSet, VersionedViewSet
 from tests.models import Thing
 

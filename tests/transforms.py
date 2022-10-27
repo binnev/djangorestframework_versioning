@@ -1,4 +1,4 @@
-from drf_versioning.transform import AddField
+from drf_versioning.transforms import AddField
 from tests import versions
 
 

@@ -1,6 +1,6 @@
 from rest_framework import versioning
 
-from .version import Version
+from .versions import Version
 
 
 class GetDefaultMixin(versioning.BaseVersioning):

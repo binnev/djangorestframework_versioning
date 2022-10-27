@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from tests import transforms
-from drf_versioning.transform.serializers import VersionedSerializer, import_transforms
+from drf_versioning.transforms.serializers import VersionedSerializer, import_transforms
 from tests.models import Thing, Person
 
 

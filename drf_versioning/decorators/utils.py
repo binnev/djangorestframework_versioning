@@ -1,6 +1,6 @@
 from typing import Optional
 
-from drf_versioning.version import Version
+from drf_versioning.versions import Version
 
 
 def get_min_version(view_min: Optional[Version], viewset_min: Optional[Version]):

@@ -1,4 +1,4 @@
-from drf_versioning.version import Version
+from drf_versioning.versions import Version
 
 VERSION_0_0_1 = Version("0.0.1", notes=["Pre-release"])
 VERSION_1_0_0 = Version("1.0.0", notes=["Initial version"])

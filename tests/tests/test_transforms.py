@@ -1,7 +1,7 @@
 import pytest
 
-from drf_versioning.transform import AddField, RemoveField, Transform
-from drf_versioning.version import Version
+from drf_versioning.transforms import AddField, RemoveField, Transform
+from drf_versioning.versions import Version
 
 
 def test_transform_notimplemented():

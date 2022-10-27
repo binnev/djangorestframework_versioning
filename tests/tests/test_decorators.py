@@ -6,7 +6,7 @@ from django.http import Http404
 from drf_versioning.decorators import versioned_view
 from drf_versioning.decorators.utils import get_min_version, get_max_version
 from drf_versioning.exceptions import VersionsNotDeclaredError
-from drf_versioning.version import Version
+from drf_versioning.versions import Version
 from tests import versions
 
 

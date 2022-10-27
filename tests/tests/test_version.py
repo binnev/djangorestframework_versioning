@@ -5,7 +5,7 @@ import pytest
 from packaging.version import InvalidVersion
 
 from drf_versioning.exceptions import VersionDoesNotExist
-from drf_versioning.version import Version
+from drf_versioning.versions import Version
 from tests import versions
 
 
@@ -37,7 +37,7 @@ def test_get_sad(input, expected_exception):
         ("latest", Version("3.0")),
     ],
 )
-@patch("drf_versioning.version.base.Version.list")
+@patch("drf_versioning.versions.base.Version.list")
 def test_get_default_happy(mock, settings_default, expected_version, patch_settings):
     """The user can specify a specific version as default, or use "earliest" / "latest"."""
     mock.return_value = [

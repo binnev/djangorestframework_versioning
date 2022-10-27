@@ -1,4 +1,4 @@
-from ..version import Version
+from ..versions import Version
 
 
 class TransformMeta(type):

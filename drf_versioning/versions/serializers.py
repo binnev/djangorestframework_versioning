@@ -2,7 +2,7 @@ import re
 
 from rest_framework import serializers
 
-from drf_versioning.transform import Transform
+from drf_versioning.transforms import Transform
 
 """
 This is how I'd want the serialized Versions to look:

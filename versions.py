@@ -1,5 +1,5 @@
 """Using Versions to describe the changes in this versioning library -- wow so meta."""
-from drf_versioning.version import Version
+from drf_versioning.versions import Version
 
 VERSION_1_0_0 = Version(
     notes=[
