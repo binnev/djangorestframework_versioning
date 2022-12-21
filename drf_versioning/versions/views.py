@@ -7,8 +7,10 @@ from ..versions.serializers import VersionSerializer
 
 
 class VersionViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+    """Serializes all the Versions in the VERSION_LIST."""
+
     serializer_class = VersionSerializer
-    queryset = versioning_settings.VERSION_LIST
+    queryset = tuple(sorted(versioning_settings.VERSION_LIST, reverse=True))
 
     @decorators.action(methods=["GET"], detail=False)
     def my_version(self, request, *args, **kwargs):

@@ -1,12 +1,20 @@
 """Using Versions to describe the changes in this versioning library -- wow so meta."""
 from drf_versioning.versions import Version
 
+VERSION_2_0_1 = Version(
+    "2.0.1",
+    notes=[
+        "VersionViewSet now sorts the version list in reverse order (once, at class definition).",
+    ],
+)
 VERSION_2_0_0 = Version(
+    "2.0.0",
     notes=[
         "Restructured the project to make importing stuff more intuitive.",
-    ]
+    ],
 )
 VERSION_1_0_0 = Version(
+    "1.0.0",
     notes=[
         (
             "VersionedViewSetMeta now checks that all VersionedViewSet subclasses have defined "
@@ -20,9 +28,10 @@ VERSION_1_0_0 = Version(
         ),
         "Added dateutil as a requirement.",
         "VersionedSerializer can now be used inline.",
-    ]
+    ],
 )
 VERSION_0_2_0 = Version(
+    "0.2.0",
     notes=[
         "Added a list of Versions to track changes to this library.",
         (
@@ -45,9 +54,10 @@ VERSION_0_2_0 = Version(
             "VersionedSerializer.__init__ checks that transforms have been imported. This means "
             "if they haven't, you'll get the error at startup, not during first serialization."
         ),
-    ]
+    ],
 )
 VERSION_0_1_1 = Version(
+    "0.1.1",
     notes=[
         (
             "Added VersionedViewSet class and versioned_view decorator to allow versioning views. "
@@ -55,13 +65,14 @@ VERSION_0_1_1 = Version(
             "`introduced_in` and `removed_in` parameters, a 404 Not Found is returned as if the "
             "view doesn't exist. "
         ),
-    ]
+    ],
 )
 VERSION_0_1_11 = Version(
+    "0.1.11",
     notes=[
         (
             "First semi-usable version of this library. Not worth documenting versions earlier "
             "than this as they were changing so fast and erratically."
         ),
-    ]
+    ],
 )
