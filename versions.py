@@ -5,6 +5,10 @@ VERSION_2_0_1 = Version(
     "2.0.1",
     notes=[
         "VersionViewSet now sorts the version list in reverse order (once, at class definition).",
+        (
+            "VersionDoesNotExist is now a subclass of APIException, so the error handler can now "
+            "gracefully handle it "
+        ),
     ],
 )
 VERSION_2_0_0 = Version(

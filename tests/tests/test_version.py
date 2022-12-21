@@ -25,7 +25,7 @@ def test_get_happy():
     ],
 )
 def test_get_sad(input, expected_exception):
-    with pytest.raises(expected_exception) as e:
+    with pytest.raises(expected_exception):
         Version.get(input)
 
 
