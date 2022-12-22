@@ -6,6 +6,11 @@ VERSION_2_0_3 = Version(
     notes=[
         "Middleware no longer hard errors if the request version is not in the list of versions.",
         "Changed VersionDoesNotExist.status_code to 406",
+        (
+            "Overriding the Version model is now supported. You can include the 'VERSION_MODEL' "
+            "key in the DRF_VERSIONING_SETTINGS, where the value is a string describing the path "
+            "to your Version model."
+        ),
     ],
 )
 VERSION_2_0_2 = Version(
