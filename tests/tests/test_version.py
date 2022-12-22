@@ -5,12 +5,17 @@ import pytest
 from packaging.version import InvalidVersion
 
 from drf_versioning.exceptions import VersionDoesNotExist
+from drf_versioning.settings import versioning_settings
 from drf_versioning.versions import Version
 from tests import versions
 
 
 def test_version_list_retrieves_from_settings():
     assert Version.list() == versions.VERSIONS
+
+
+def test_newly_instantiated_version_equals_already_created_one():
+    assert versions.VERSION_2_0_0 == Version("2.0.0")
 
 
 def test_get_happy():
@@ -82,3 +87,15 @@ def test_comparison_happy(v_left, v_right, op, expected_output):
     # if one is a string, it should also work
     assert op(Version(v_left), v_right) == expected_output
     assert op(v_left, Version(v_right)) == expected_output
+
+
+def test_custom_version_model(patch_settings):
+    from tests.versions import Version as CustomVersionModel
+
+    VersionModelFromSettings = versioning_settings.VERSION_MODEL
+
+    for VersionModel in CustomVersionModel, VersionModelFromSettings:
+        v = VersionModel("666", date_created="2022-12-22")
+        assert v.date_created == "2022-12-22"
+        v = VersionModel("666")
+        assert v.date_created == "today"

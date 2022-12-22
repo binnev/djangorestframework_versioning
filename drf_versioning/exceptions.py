@@ -7,7 +7,7 @@ class VersionDoesNotExist(APIException):
         message = f"Version does not exist: {version_str}"
         super().__init__(message)
 
-    status_code = status.HTTP_400_BAD_REQUEST
+    status_code = status.HTTP_406_NOT_ACCEPTABLE
 
 
 class TransformsNotDeclaredError(Exception):

@@ -1,9 +1,10 @@
 from rest_framework import viewsets, mixins, decorators
 from rest_framework.response import Response
 
-from ..settings import versioning_settings
-from ..versions import Version
+from drf_versioning.settings import versioning_settings
 from ..versions.serializers import VersionSerializer
+
+Version = versioning_settings.VERSION_MODEL
 
 
 class VersionViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):

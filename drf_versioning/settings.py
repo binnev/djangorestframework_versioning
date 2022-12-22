@@ -7,11 +7,15 @@ from django.test.signals import setting_changed
 from rest_framework.settings import perform_import
 
 DEFAULTS = {
+    "VERSION_MODEL": "drf_versioning.versions.Version",
     "VERSION_LIST": [],
     "DEFAULT_VERSION": "latest",
 }
 
-IMPORT_STRINGS = ["VERSION_LIST"]
+IMPORT_STRINGS = [
+    "VERSION_LIST",
+    "VERSION_MODEL",
+]
 
 REMOVED_SETTINGS = []
 

@@ -1,6 +1,8 @@
 from rest_framework import versioning
 
-from .versions import Version
+from drf_versioning.settings import versioning_settings
+
+Version = versioning_settings.VERSION_MODEL
 
 
 class GetDefaultMixin(versioning.BaseVersioning):
@@ -13,7 +15,7 @@ class GetDefaultMixin(versioning.BaseVersioning):
         version = super().determine_version(request, *args, **kwargs)
         if not version:
             return Version.get_default().base_version
-        return Version.get(version).base_version
+        return version
 
 
 class AcceptHeaderVersioning(GetDefaultMixin, versioning.AcceptHeaderVersioning):

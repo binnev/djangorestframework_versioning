@@ -1,6 +1,18 @@
 """Using Versions to describe the changes in this versioning library -- wow so meta."""
 from drf_versioning.versions import Version
 
+VERSION_2_0_3 = Version(
+    "2.0.3",
+    notes=[
+        "Middleware no longer hard errors if the request version is not in the list of versions.",
+        "Changed VersionDoesNotExist.status_code to 406",
+        (
+            "Overriding the Version model is now supported. You can include the 'VERSION_MODEL' "
+            "key in the DRF_VERSIONING_SETTINGS, where the value is a string describing the path "
+            "to your Version model."
+        ),
+    ],
+)
 VERSION_2_0_2 = Version(
     "2.0.2",
     notes=[
