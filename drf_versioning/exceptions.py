@@ -6,6 +6,7 @@ class VersionDoesNotExist(APIException):
     def __init__(self, version_str: str):
         message = f"Version does not exist: {version_str}"
         super().__init__(message)
+
     status_code = status.HTTP_400_BAD_REQUEST
 
 
