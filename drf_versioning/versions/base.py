@@ -81,4 +81,9 @@ class Version(_Version):
 
 
 def parse_other(other):
-    return other if isinstance(other, _Version) else Version(other)
+    if isinstance(other, _Version):
+        return other
+    elif isinstance(other, str):
+        return Version(other)
+    else:
+        raise InvalidVersion(str(other))

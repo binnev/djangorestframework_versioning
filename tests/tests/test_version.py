@@ -20,6 +20,8 @@ def test_get_happy():
 @pytest.mark.parametrize(
     "input, expected_exception",
     [
+        ("", InvalidVersion),
+        (None, InvalidVersion),
         ("bad_version", InvalidVersion),
         ("666.420.69", VersionDoesNotExist),
     ],
