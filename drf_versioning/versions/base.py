@@ -6,7 +6,7 @@ from ..exceptions import VersionDoesNotExist
 from ..settings import versioning_settings
 
 if TYPE_CHECKING:
-    from ..transform import Transform
+    from ..transforms import Transform
 
 
 class Version(_Version):
