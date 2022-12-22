@@ -6,6 +6,8 @@ from drf_versioning.exceptions import VersionDoesNotExist
 from drf_versioning.middleware import GetDefaultMixin
 from drf_versioning.versions import Version
 
+
+VERSION_FUTURE = Version("999")
 MOCK_VERSION_LIST = [
     Version("4.2.0"),
     Version("6.9"),
@@ -15,7 +17,9 @@ MOCK_VERSION_LIST = [
 @pytest.mark.parametrize(
     "super_version, expected_version",
     [
-        ("6.9", "6.9"),  # version passed in request
+        ("999", "999"),  # version passed in request matches version not in list
+        ("6.9", "6.9"),  # version passed in request matches public version in list
+        ("666.420", "666.420"),  # completely fictitious version
         (None, "4.2.0"),  # no version in request -> use default
         ("", "4.2.0"),  # no version in request -> use default
     ],
@@ -32,11 +36,3 @@ def test_get_default_mixin(mock, super_version, expected_version, patch_settings
     assert isinstance(version, str)
     assert version == expected_version
     mock.assert_called_with(...)
-
-
-@patch("rest_framework.versioning.BaseVersioning.determine_version")
-def test_get_default_mixin_errors_on_unrecognized_version(mock_super, patch_settings):
-    mock_super.return_value = "4.20"
-    with patch_settings(VERSION_LIST="tests.tests.test_middleware.MOCK_VERSION_LIST"):
-        with pytest.raises(VersionDoesNotExist):
-            GetDefaultMixin().determine_version(...)

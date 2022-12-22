@@ -13,7 +13,7 @@ class GetDefaultMixin(versioning.BaseVersioning):
         version = super().determine_version(request, *args, **kwargs)
         if not version:
             return Version.get_default().base_version
-        return Version.get(version).base_version
+        return version
 
 
 class AcceptHeaderVersioning(GetDefaultMixin, versioning.AcceptHeaderVersioning):

@@ -13,6 +13,10 @@ def test_version_list_retrieves_from_settings():
     assert Version.list() == versions.VERSIONS
 
 
+def test_newly_instantiated_version_equals_already_created_one():
+    assert versions.VERSION_2_0_0 == Version("2.0.0")
+
+
 def test_get_happy():
     assert Version.get("2.0.0") == versions.VERSION_2_0_0
 
