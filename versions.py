@@ -1,6 +1,15 @@
 """Using Versions to describe the changes in this versioning library -- wow so meta."""
 from drf_versioning.versions import Version
 
+VERSION_2_0_2 = Version(
+    "2.0.2",
+    notes=[
+        (
+            "Better error messages if None or some other non-Version|str object gets passed to "
+            "Version.get(). "
+        )
+    ],
+)
 VERSION_2_0_1 = Version(
     "2.0.1",
     notes=[
