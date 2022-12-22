@@ -5,6 +5,7 @@ VERSION_2_0_3 = Version(
     "2.0.3",
     notes=[
         "Middleware no longer hard errors if the request version is not in the list of versions.",
+        "Changed VersionDoesNotExist.status_code to 406",
     ],
 )
 VERSION_2_0_2 = Version(
