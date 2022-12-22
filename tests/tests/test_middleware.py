@@ -2,10 +2,8 @@ from unittest.mock import patch
 
 import pytest
 
-from drf_versioning.exceptions import VersionDoesNotExist
 from drf_versioning.middleware import GetDefaultMixin
 from drf_versioning.versions import Version
-
 
 VERSION_FUTURE = Version("999")
 MOCK_VERSION_LIST = [
