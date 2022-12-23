@@ -64,26 +64,26 @@ class Version(_Version):
             except KeyError:
                 raise e
 
+    @classmethod
+    def parse(cls, other: Union[_Version, str]):
+        if isinstance(other, _Version):
+            return other
+        elif isinstance(other, str):
+            return cls(other)
+        else:
+            raise InvalidVersion(str(other))
+
     def __lt__(self, other: Union[str, "Version"]) -> bool:
-        return super().__lt__(parse_other(other))
+        return super().__lt__(self.parse(other))
 
     def __le__(self, other: Union[str, "Version"]) -> bool:
-        return super().__le__(parse_other(other))
+        return super().__le__(self.parse(other))
 
     def __eq__(self, other: Union[str, "Version"]) -> bool:
-        return super().__eq__(parse_other(other))
+        return super().__eq__(self.parse(other))
 
     def __ge__(self, other: Union[str, "Version"]) -> bool:
-        return super().__ge__(parse_other(other))
+        return super().__ge__(self.parse(other))
 
     def __gt__(self, other: Union[str, "Version"]) -> bool:
-        return super().__gt__(parse_other(other))
-
-
-def parse_other(other):
-    if isinstance(other, _Version):
-        return other
-    elif isinstance(other, str):
-        return Version(other)
-    else:
-        raise InvalidVersion(str(other))
+        return super().__gt__(self.parse(other))
