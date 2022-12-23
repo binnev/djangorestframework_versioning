@@ -1,6 +1,15 @@
 """Using Versions to describe the changes in this versioning library -- wow so meta."""
 from drf_versioning.versions import Version
 
+VERSION_2_0_4 = Version(
+    "2.0.4",
+    notes=[
+        (
+            "Added Version.parse() which can be overridden for custom parsing behaviour in "
+            "Version subclasses. ",
+        )
+    ],
+)
 VERSION_2_0_3 = Version(
     "2.0.3",
     notes=[

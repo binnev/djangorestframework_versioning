@@ -8,6 +8,8 @@ from drf_versioning.exceptions import VersionDoesNotExist
 from drf_versioning.settings import versioning_settings
 from drf_versioning.versions import Version
 from tests import versions
+from packaging.version import Version as PackagingVersion
+from tests.versions import Version as CustomVersionModel
 
 
 def test_version_list_retrieves_from_settings():
@@ -90,8 +92,6 @@ def test_comparison_happy(v_left, v_right, op, expected_output):
 
 
 def test_custom_version_model(patch_settings):
-    from tests.versions import Version as CustomVersionModel
-
     VersionModelFromSettings = versioning_settings.VERSION_MODEL
 
     for VersionModel in CustomVersionModel, VersionModelFromSettings:
@@ -99,3 +99,22 @@ def test_custom_version_model(patch_settings):
         assert v.date_created == "2022-12-22"
         v = VersionModel("666")
         assert v.date_created == "today"
+
+
+@pytest.mark.parametrize(
+    "input, expected_result",
+    [
+        (None, InvalidVersion()),
+        ("", InvalidVersion()),
+        ("1.0", Version("1.0")),
+        (Version("1.0"), Version("1.0")),  # is subclass of packaging.Version
+        (PackagingVersion("1.0"), PackagingVersion("1.0")),  # is subclass of packaging.Version
+        (CustomVersionModel("1.0"), CustomVersionModel("1.0")),  # is subclass of packaging.Version
+    ],
+)
+def test_parse(input, expected_result):
+    if isinstance(expected_result, Exception):
+        with pytest.raises(expected_result.__class__):
+            Version.parse(input)
+    else:
+        assert Version.parse(input) == expected_result
