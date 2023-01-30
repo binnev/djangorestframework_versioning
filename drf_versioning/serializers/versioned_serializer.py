@@ -28,23 +28,22 @@ class VersionedSerializer(serializers.Serializer):
 
     def transforms_for_version(self, version: Version, reverse=False) -> list[type[Transform]]:
         return sorted(
-            filter(lambda t: version < t.version, self.transforms),
-            key=lambda t: t.version,
+            filter(lambda transform: version < transform.version, self.transforms),
+            key=lambda transform: transform.version,
             reverse=reverse,
         )
 
     def to_representation(self, instance):
         """
-        Serializes the outgoing data as JSON and executes any available version transforms in backwards
-        order against the serialized representation to convert the highest supported version into the
-        requested version of the resource.
+        Serializes the outgoing data as JSON and executes any available version transforms in
+        backwards order against the serialized representation to convert the highest supported
+        version into the requested version of the resource.
         """
         data = super().to_representation(instance)
         request = self.context.get("request")
         if request_version := self._get_request_version():
-            # demote data until we've run the transform just above the requested version
             for transform in self.transforms_for_version(version=request_version, reverse=True):
-                data = transform().to_representation(data, request, instance)
+                transform().to_representation(data, request, instance)
 
         return data
 
@@ -53,6 +52,6 @@ class VersionedSerializer(serializers.Serializer):
         request = self.context.get("request")
         if request_version := self._get_request_version():
             for transform in self.transforms_for_version(version=request_version, reverse=False):
-                data = transform().to_internal_value(data, request)
+                transform().to_internal_value(data, request)
 
         return super().to_internal_value(data)
