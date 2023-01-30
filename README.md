@@ -1,14 +1,80 @@
 # Django Rest Framework Versioning
 
-## Installation
+## Project description 
+This project aims to make it easy to support many different API versions in a Django REST Framework (DRF) project.
 
-...
+DRF [supports several versioning schemes](https://www.django-rest-framework.org/api-guide/versioning/) but (perhaps wisely) completely sidesteps the issue of how to deal with the different versions in your code. To quote the docs: "How you vary the API behavior is up to you". 
+
+Django Rest Framework Versioning aims to provide some out-of-the box tools to handle versioning in the code. It is inspired by Stripe's API version "compatibility layer", as described in blog posts by [Brandur Leach](https://stripe.com/blog/api-versioning) and [Amber Feng](https://amberonrails.com/move-fast-dont-break-your-api). I used [Ryan Kaneshiro's](https://rescale.com/blog/api-versioning-with-the-django-rest-framework/) excellent Django sketch as a starting point. 
+
+## Installation quick start
+
+This section is intended for those who want to install DRF Versioning into an existing Django project.
+
+**1. Create a versioning module: `./manage.py startapp versioning` or `mkdir versioning`**
+
+Suggested structure:
+
+```
+└── versioning
+    ├── __init__.py
+    ├── version_list.py    # maintain the list of supported Versions here
+    └── versions.py        # define your Version instances here
+```
+
+with `versions.py` containing:
+
+```python
+from drf_versioning.versions import Version
+
+VERSION_1_0_0 = Version(
+    "1.0.0",
+    notes=["Initial version"],
+)
+```
+
+and `version_list.py` containing:
+
+```python
+from . import versions
+
+VERSIONS = [
+    versions.VERSION_1_0_0,
+]
+```
+
+**2. Update project settings**
+
+In your project `settings.py` add:
+
+```python
+REST_FRAMEWORK = {
+    ...,  # any other rest_framework settings
+    "DEFAULT_VERSIONING_CLASS": "drf_versioning.middleware.AcceptHeaderVersioning",
+}
+
+DRF_VERSIONING_SETTINGS = {
+    "VERSION_LIST": "versioning.version_list.VERSIONS",
+    "DEFAULT_VERSION": "latest",
+}
+```
+
+**3. (Optional) add versioning urls**
+
+In your project `urls.py`:
+
+```python
+urlpatterns = [
+    ...,  # your other urls
+    path("version/", include("drf_versioning.urls")),
+]
+```
 
 ## Tutorial
 
 ### Django project setup
 
-To showcase the features of this library, we will set up a basic Django Rest Framework project. If you want to install DRF Versioning into an existing project, feel free to skip to the Installation chapter. The [Django tutorial](https://docs.djangoproject.com/en/4.1/intro/tutorial01/) may also be helpful if you are doing this for the first time.
+To showcase the features of this library, we will set up a basic Django Rest Framework project. If you want to install DRF Versioning into an existing project, feel free to skip to the **[DRF versioning installation](#drf-versioning-installation)** section. The [Django tutorial](https://docs.djangoproject.com/en/4.1/intro/tutorial01/) may also be helpful if you are doing this for the first time.
 
 [Create a project directory and a virtual environment](https://realpython.com/python-virtual-environments-a-primer/), and inside it create `requirements.txt` with the following contents:
 
@@ -273,7 +339,9 @@ Now that we have completed the setup, we can start the interesting part -- makin
 
 #### Versioning views
 
-Let's say we want to add a new view to the Dogs viewset -- a view for individual dogs. Paste the following code into your `doggies/views.py`:
+##### View actions / methods
+
+Let's say we want to add a new action to the Dogs viewset -- a view for individual dogs. Paste the following code into your `doggies/views.py`:
 
 ```python
 from drf_versioning.decorators import versioned_view
@@ -370,6 +438,8 @@ If we repeat the same request with `Accept: application/json; version=2.0.0`, we
 ```
 
 The `versioned_view` decorator also accepts a `removed_in` argument. If this is present, the view will be hidden for all requests whose version is greater.
+
+##### ViewSets
 
 If we want to introduce / remove a whole endpoint, we can achieve this by inheriting from the `VersionedViewSet` class. In this case the `introduced_in` and `removed_in` versions are set as class attributes, which also apply to any of the ViewSet's methods:
 
@@ -590,7 +660,18 @@ The Transform object adds its `description` field to the Version instance's `mod
 
 ##### Mutating fields
 
-Let's say we want to update the Dog model to provide a `dog_years` property, and we want to group this together with the `age` property like this:
+Let's say we want to update the Dog model to provide a `dog_years` property:
+
+```python
+class Dog(models.Model):
+    ...
+
+    @property
+    def dog_years(self):
+        return self.age * 7
+```
+
+and we want to group this together with the `age` property like this:
 
 ```json
 {
@@ -720,3 +801,150 @@ In Postman: `GET /doggies/1/` with version = 3.0.0:
   }
 }
 ```
+
+##### Removing a field
+
+Let's say we've decided to remove the age field altogether, and let the API consumer work it out for themselves based on the birthday field.
+
+In `doggies/transforms.py`:
+
+```python
+class RemoveAge(Transform):
+    version = versions.VERSION_4_0_0
+    description = "Removed Dog.age field"
+
+    def to_representation(self, data: dict, request, instance):
+        """
+        Here we downgrade the serializer's output data to make it match older API versions.
+        We have removed the field, but older versions are still expecting it. So we add it to the
+        serializer output for older versions here.
+        """
+        data["age"] = {
+            "human_years": instance.age,
+            "dog_years": instance.dog_years,
+        }
+        return data
+```
+
+In `doggies/serializers.py`:
+
+```python
+from drf_versioning.serializers import VersionedSerializer
+from rest_framework import serializers
+
+from doggies.models import Dog
+from . import transforms
+
+
+class DogSerializer(VersionedSerializer, serializers.ModelSerializer):
+    transforms = (
+        transforms.AddAge,
+        transforms.GroupAgeAndDogYears,
+        transforms.RemoveAge,
+    )
+
+    class Meta:
+        model = Dog
+        fields = (
+            "id",
+            "name",
+            "birthday",
+            # "age",  # <---- remove this field 
+        )
+```
+
+The resulting behaviour of the API is:
+
+In Postman: `GET /doggies/1/` with version = 3.0.0:
+
+```json
+{
+  "id": 1,
+  "name": "Biko",
+  "birthday": "2014-05-06",
+  "age": {
+    "human_years": 8,
+    "dog_years": 56
+  }
+}
+```
+
+In Postman: `GET /doggies/1/` with version = 4.0.0:
+
+```json
+{
+  "id": 1,
+  "name": "Biko",
+  "birthday": "2014-05-06"
+}
+```
+
+In this example, we still have access to the `Dog.age` and `Dog.dog_years` properties, so we can continue serializing real values for older request versions.
+
+But let's say the property has been removed, and we completely lose access to the source data. We can no longer serialize the dog's age for older versions. In this case we can instead serialize a "null value" that satisfies the type and structure that the older version is expecting. For Dog.age, we could use `-1`, for example.
+
+DRF Versioning provides another built in Transform subclass for this case: `RemoveField`. We can recreate the behaviour of our `RemoveAge` transform like this:
+
+```python
+class RemoveAge(RemoveField):
+    version = versions.VERSION_4_0_0
+    field_name = "age"
+    description = "Removed Dog.age field"
+    null_value = {"human_years": -1, "dog_years": -1}
+```
+
+Now is a good time to check that our Transforms correctly cascade their changes through all API versions.
+
+In Postman: `GET /doggies/1/` with version = 1.0.0:
+
+```json
+{
+  "detail": "Not found."
+}
+```
+
+In Postman: `GET /doggies/1/` with version = 2.0.0:
+
+```json
+{
+  "id": 1,
+  "name": "Biko",
+  "birthday": "2014-05-06"
+}
+```
+
+In Postman: `GET /doggies/1/` with version = 2.1.0:
+
+```json
+{
+  "id": 1,
+  "name": "Biko",
+  "birthday": "2014-05-06",
+  "age": -1
+}
+```
+
+In Postman: `GET /doggies/1/` with version = 3.0.0:
+
+```json
+{
+  "id": 1,
+  "name": "Biko",
+  "birthday": "2014-05-06",
+  "age": {
+    "human_years": -1,
+    "dog_years": -1
+  }
+}
+```
+
+In Postman: `GET /doggies/1/` with version = 4.0.0:
+
+```json
+{
+  "id": 1,
+  "name": "Biko",
+  "birthday": "2014-05-06"
+}
+```
+
