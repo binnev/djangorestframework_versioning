@@ -1,6 +1,16 @@
 """Using Versions to describe the changes in this versioning library -- wow so meta."""
 from drf_versioning.versions import Version
 
+VERSION_2_0_5 = Version(
+    "2.0.5",
+    notes=[
+        (
+            "VersionedSerializer now uses transforms to mutate data in-place instead of "
+            "overwriting the data dict with the transform output each time",
+        ),
+        "Added an actual useful readme.",
+    ],
+)
 VERSION_2_0_4 = Version(
     "2.0.4",
     notes=[
