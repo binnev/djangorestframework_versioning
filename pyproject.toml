@@ -1,3 +1,51 @@
 [build-system]
-requires = ["setuptools>=42"]
+requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "djangorestframework_versioning"
+version = "2.0.5"
+description = "Versioning tools for use with Django Rest Framework"
+readme = "README.md"
+authors = [{ name = "Robin Neville", email = "robin.m.neville@gmail.com" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+keywords = ["django", "REST framework", "versioning"]
+dependencies = [
+    "django >=3.2",
+    "djangorestframework >=3.13.1",
+    "typing >=3.7.4.3",
+    "packaging >=3.0.9",
+]
+requires-python = ">=3.9"
+[project.optional-dependencies]
+dev = ["black", "bumpver", "pytest"]
+
+[project.urls]
+Homepage = " https://github.com/binnev/djangorestframework_versioning"
+
+[tool.setuptools.packages.find]
+include = ["drf_versioning*"]
+
+[tool.bumpver]
+current_version = "2.0.5"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit_message = "Bump version {old_version} -> {new_version}"
+commit = true
+tag = false
+push = false
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = [
+    'current_version = "{version}"',
+    'version = "{version}"',
+]
+"drf_versioning/__init__.py" = [
+    '__version__ = "{version}"',
+]
+
+
