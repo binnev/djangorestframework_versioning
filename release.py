@@ -32,6 +32,9 @@ if __name__ == "__main__":
     cleanup()
     check(f"Did you create / update the Version changelog for version {version}?")
 
+    print("Running tests")
+    check("Did all the tests pass?")
+
     print("Building package")
     shell("python -m build")
     shell("twine check dist/*")
@@ -40,8 +43,8 @@ if __name__ == "__main__":
     shell("twine upload -r pypitest dist/*")
     check(f"Does the testpypi output look OK?")
 
-    # print("PyPI deploy")
-    # shell("twine upload dist/*", she)
+    print("PyPI deploy")
+    shell("twine upload dist/*")
 
     print("Building docs")
     shell(f"mike deploy {version}")
