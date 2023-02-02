@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Sample Django project setup - Django REST Framework Versioning</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+        <link href="../../css/version-select.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Sample Django project setup";
+        var mkdocs_page_input_path = "tutorials/sample-django-project.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Django REST Framework Versioning
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../quickstart/">Quick start</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Sample Django project setup</a>
+    <ul class="current">
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../views/">Versioning views</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../serializers/">Versioning models / serializers</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/how-to-guides/">How to guides</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/how-to-foo/">How to foo</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/">API Reference</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Django REST Framework Versioning</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>Tutorials &raquo;</li>
+      <li>Sample Django project setup</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="sample-django-project-setup">Sample Django project setup</h1>
+<p>To showcase the features of this library, we will set up a basic Django Rest Framework project. If you want to install DRF Versioning into an existing project, or if you just need a quick reference, feel free to skip this and use the Quick Start page instead. </p>
+<p>The <a href="https://docs.djangoproject.com/en/4.1/intro/tutorial01/">Django tutorial</a> may also be helpful if you are doing this for the first time.</p>
+<p><a href="https://realpython.com/python-virtual-environments-a-primer/">Create a project directory and a virtual environment</a>, and inside it create <code>requirements.txt</code> with the following contents:</p>
+<pre><code>django
+djangorestframework
+djangorestframework-versioning
+</code></pre>
+<p>and run</p>
+<pre><code class="language-shell">pip install -r requirements.txt
+</code></pre>
+<pre><code class="language-shell">django-admin startproject mysite
+</code></pre>
+<p>start doggies app</p>
+<pre><code class="language-shell">./manage.py startapp doggies
+</code></pre>
+<p>Add <code>"doggies"</code> to <code>settings.INSTALLED_APPS</code></p>
+<p>Create <code>doggies/models.py</code> with contents:</p>
+<pre><code class="language-python">from django.db import models
+from datetime import date
+
+
+class Dog(models.Model):
+    name = models.CharField(max_length=50)
+    birthday = models.DateField(default=date.today)
+
+    def __str__(self):
+        return self.name.title()
+</code></pre>
+<p>Create <code>doggies/serializers.py</code> with contents:</p>
+<pre><code class="language-python">from rest_framework import serializers
+
+from doggies.models import Dog
+
+
+class DogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Dog
+        fields = (
+            &quot;id&quot;,
+            &quot;name&quot;,
+            &quot;birthday&quot;,
+        )
+</code></pre>
+<p>Create <code>doggies/admin.py</code> with contents:</p>
+<pre><code class="language-python">from django.contrib import admin
+from doggies.models import Dog
+
+
+@admin.register(Dog)
+class DogAdmin(admin.ModelAdmin):
+    pass
+</code></pre>
+<p>Create <code>doggies/views.py</code> with contents:</p>
+<pre><code class="language-python">from rest_framework import viewsets, mixins
+
+from doggies.models import Dog
+from doggies.serializers import DogSerializer
+
+
+class DoggieViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+    serializer_class = DogSerializer
+    queryset = Dog.objects.all()
+</code></pre>
+<p>Create <code>doggies/urls.py</code> with contents:</p>
+<pre><code class="language-python">from rest_framework.routers import DefaultRouter
+from . import views
+
+router = DefaultRouter()
+
+router.register(&quot;&quot;, views.DoggieViewSet, basename=&quot;doggies&quot;)
+
+urlpatterns = router.urls
+</code></pre>
+<p>Register our doggies app urls in the global project urls <code>mysite/urls.py</code>:</p>
+<pre><code class="language-python">from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path(&quot;admin/&quot;, admin.site.urls),
+    path(&quot;doggies/&quot;, include(&quot;doggies.urls&quot;)),
+]
+</code></pre>
+<p>Your project directory should now look like this:</p>
+<pre><code>├── db.sqlite3
+├── doggies
+│   ├── admin.py
+│   ├── apps.py
+│   ├── __init__.py
+│   ├── migrations
+│   │   ├── 0001_initial.py
+│   │   └──  __init__.py
+│   ├── models.py
+│   ├── serializers.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── manage.py
+├── mysite
+│   ├── asgi.py
+│   ├── __init__.py
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+└── requirements.txt
+</code></pre>
+<p>Create the new Dog table in the database:</p>
+<pre><code class="language-shell">./manage.py makemigrations
+</code></pre>
+<pre><code class="language-shell">./manage.py migrate
+</code></pre>
+<p>create superuser</p>
+<pre><code class="language-shell">./manage.py createsuperuser
+</code></pre>
+<p>create some dogs in the admin site</p>
+<p>Now if we navigate to <code>localhost:8000/doggies/</code> we should see the following output:</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../../quickstart/" class="btn btn-neutral float-left" title="Quick start"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../installation/" class="btn btn-neutral float-right" title="Installation">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../../quickstart/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../installation/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme_extra.js" defer></script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+      <script src="../../js/version-select.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
