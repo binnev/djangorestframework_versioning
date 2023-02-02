@@ -12,6 +12,8 @@ pytest-cov>=3.0.0, <4.0
 pytest-django>=4.4.0, <5.0
 python-dateutil>=2.8.2, <3.0
 redbreast==1.0.0
+
+# documentation
 mkdocs
 mkdocstrings[python]
 mike
@@ -20,3 +22,4 @@ mike
 wheel>=0.37, <0.38
 twine>=4.0.1, <5.0
 build>=0.8.0, <0.9
+bumpver
