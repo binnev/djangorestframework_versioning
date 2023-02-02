@@ -8,7 +8,7 @@ This project provides some out-of-the box tools to handle versioning in views an
 
 ## Documentation
 
-Please see the full documentation [here](https://binnev.github.io/djangorestframework-versioning/).
+Please see the full documentation [here](https://binnev.github.io/djangorestframework_versioning/).
 
 ## Acknowledgements
 
