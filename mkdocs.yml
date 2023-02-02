@@ -1,0 +1,22 @@
+site_name: Django REST Framework Versioning
+
+theme:
+  name: "readthedocs"
+
+plugins:
+  - search
+  - mkdocstrings
+  - mike
+
+nav:
+  - Home: README.md
+  - Quick start: quickstart.md
+  - Tutorials:
+    - tutorials/sample-django-project.md
+    - tutorials/installation.md
+    - tutorials/views.md
+    - tutorials/serializers.md
+#  - How-to guides:
+#    - how-to-guides/how-to-guides.md
+#  - API Reference:
+#    - reference.md
