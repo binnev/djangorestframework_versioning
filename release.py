@@ -9,6 +9,7 @@ def cleanup():
     for folder in [
         Path(__file__).parent / f"{LIBRARY_NAME}.egg-info",
         Path(__file__).parent / "dist",
+        Path(__file__).parent / "site",
     ]:
         if folder.exists():
             shutil.rmtree(folder)
