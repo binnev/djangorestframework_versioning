@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Versioning models / serializers - Django REST Framework Versioning</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+        <link href="../../css/version-select.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Versioning models / serializers";
+        var mkdocs_page_input_path = "tutorials/serializers.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Django REST Framework Versioning
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../quickstart/">Quick start</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../sample-django-project/">Sample Django project setup</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../views/">Versioning views</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Versioning models / serializers</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#adding-a-new-field">Adding a new field</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#mutating-fields">Mutating fields</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#removing-a-field">Removing a field</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Django REST Framework Versioning</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>Tutorials &raquo;</li>
+      <li>Versioning models / serializers</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="versioning-models-serializers">Versioning models / serializers</h1>
+<p>At some point we will need to make changes to our models in order to add new features. But we also want to keep supporting older API versions.</p>
+<p>drf_versioning acts as a "versioning layer" in this regard.</p>
+<h2 id="adding-a-new-field">Adding a new field</h2>
+<p>Let's add a new <code>age</code> property to the Dog model.</p>
+<pre><code class="language-python">from django.db import models
+from datetime import date
+
+from django.utils import timezone
+
+
+class Dog(models.Model):
+    name = models.CharField(max_length=50)
+    birthday = models.DateField(default=date.today)
+
+    def __str__(self):
+        return self.name.title()
+
+    @property
+    def age(self):
+        return (timezone.now().date() - self.birthday).days // 365
+</code></pre>
+<p>And add the <code>age</code> field to the <code>DogSerializer</code> in <code>doggies/serializers.py</code>:</p>
+<pre><code class="language-python">class DogSerializer(serializers.ModelSerializer):
+    age = serializers.IntegerField()
+
+    class Meta:
+        model = Dog
+        fields = (
+            &quot;id&quot;,
+            &quot;name&quot;,
+            &quot;birthday&quot;,
+            &quot;age&quot;,
+        )
+</code></pre>
+<p>But we don't want to break old API versions with this unexpected new field. So we create a new Version and only serialize this field if the request.version is greater.</p>
+<p>in <code>versions.py</code>:</p>
+<pre><code class="language-python">VERSION_2_1_0 = Version(
+    &quot;2.1.0&quot;,
+    notes=[&quot;Added Dog.age property&quot;],
+)
+</code></pre>
+<p>Now create a new file <code>doggies/transforms.py</code>, with the following content:</p>
+<pre><code class="language-python">from drf_versioning.transforms import Transform
+
+from versioning import versions
+
+
+class AddAge(Transform):
+    version = versions.VERSION_2_1_0
+    description = &quot;Added Dog.age which is auto-calculated based on the Dog's birthday.&quot;
+
+    def to_representation(self, data: dict, request, instance):
+        &quot;&quot;&quot;
+        Here we downgrade the serializer's output data to make it match older API versions.
+        In this case that means removing the new 'age' field.
+        &quot;&quot;&quot;
+        data.pop(&quot;age&quot;, None)
+        return data
+
+    def to_internal_value(self, data: dict, request):
+        &quot;&quot;&quot;
+        Here we upgrade the request.data to make it match the latest API version.
+        In this case the 'age' field is read-only, so no action is required.
+        &quot;&quot;&quot;
+        pass
+</code></pre>
+<p>And update the <code>DogSerializer</code> in <code>doggies/serializers.py</code>:</p>
+<pre><code class="language-python">from drf_versioning.serializers import VersionedSerializer
+from rest_framework import serializers
+
+from doggies.models import Dog
+from . import transforms
+
+
+class DogSerializer(VersionedSerializer, serializers.ModelSerializer):
+    age = serializers.IntegerField()
+
+    transforms = (
+        transforms.AddAge,
+    )
+
+    class Meta:
+        model = Dog
+        fields = (
+            &quot;id&quot;,
+            &quot;name&quot;,
+            &quot;birthday&quot;,
+            &quot;age&quot;,
+        )
+</code></pre>
+<p>Here we have done:</p>
+<ul>
+<li>DogSerializer now inherits from VersionedSerializer</li>
+<li>We have declared a tuple of Transform objects that apply to this serializer</li>
+<li>The serializer code reflects the latest behaviour</li>
+<li>The Transforms downgrade the output for older request versions</li>
+</ul>
+<p>In Postman: <code>GET /doggies/1/</code> with version = 2.0.0:</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: 1,
+  &quot;name&quot;: &quot;Biko&quot;,
+  &quot;birthday&quot;: &quot;2014-05-06&quot;
+}
+</code></pre>
+<p>In Postman: <code>GET /doggies/1/</code> with version = 2.1.0:</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: 1,
+  &quot;name&quot;: &quot;Biko&quot;,
+  &quot;birthday&quot;: &quot;2014-05-06&quot;,
+  &quot;age&quot;: 8
+}
+</code></pre>
+<p>Because adding a new field is bound to a relatively common operation, DRF Versioning provides a special AddField class. Instead of our Transform subclass above, we could also have done this:</p>
+<pre><code class="language-python">from drf_versioning.transforms import AddField
+
+from versioning import versions
+
+
+class AddAge(AddField):
+    version = versions.VERSION_2_1_0
+    field_name = &quot;age&quot;
+    description = &quot;Added Dog.age which is auto-calculated based on the Dog's birthday.&quot;
+</code></pre>
+<p>and it would have had the same effect.</p>
+<p>The Transform object adds its <code>description</code> field to the Version instance's <code>models</code> changelog:</p>
+<pre><code class="language-json">    {
+  &quot;version&quot;: &quot;2.1.0&quot;,
+  &quot;notes&quot;: [],
+  &quot;models&quot;: [
+    &quot;Added Dog.age which is auto-calculated based on the Dog's birthday.&quot;
+  ],
+  &quot;views&quot;: {
+    &quot;endpoints_introduced&quot;: [],
+    &quot;endpoints_removed&quot;: [],
+    &quot;actions_introduced&quot;: [],
+    &quot;actions_removed&quot;: []
+  }
+},
+</code></pre>
+<h2 id="mutating-fields">Mutating fields</h2>
+<p>Let's say we want to update the Dog model to provide a <code>dog_years</code> property:</p>
+<pre><code class="language-python">class Dog(models.Model):
+    ...
+
+    @property
+    def dog_years(self):
+        return self.age * 7
+</code></pre>
+<p>and we want to group this together with the <code>age</code> property like this:</p>
+<pre><code class="language-json">{
+  &quot;age&quot;: {
+    &quot;human_years&quot;: 8,
+    &quot;dog_years&quot;: 56
+  }
+}
+</code></pre>
+<p>First let's update the serializers in <code>doggies/serializers.py</code>:</p>
+<pre><code class="language-python">from drf_versioning.serializers import VersionedSerializer
+from rest_framework import serializers
+
+from doggies.models import Dog
+from . import transforms
+
+
+class DogAgeSerializer(serializers.Serializer):
+    def to_representation(self, instance):
+        return {&quot;human_years&quot;: instance.age, &quot;dog_years&quot;: instance.dog_years}
+
+
+class DogSerializer(VersionedSerializer, serializers.ModelSerializer):
+    age = DogAgeSerializer(source=&quot;*&quot;)
+
+    transforms = (
+        transforms.AddAge,
+    )
+
+    class Meta:
+        model = Dog
+        fields = (
+            &quot;id&quot;,
+            &quot;name&quot;,
+            &quot;birthday&quot;,
+            &quot;age&quot;,
+        )
+</code></pre>
+<p>Our serializer now produces the desired output:</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: 1,
+  &quot;name&quot;: &quot;Biko&quot;,
+  &quot;birthday&quot;: &quot;2014-05-06&quot;,
+  &quot;age&quot;: {
+    &quot;human_years&quot;: 8,
+    &quot;dog_years&quot;: 56
+  }
+}
+</code></pre>
+<p>But we need a transform to downgrade this data for older API versions. In <code>doggies/transforms.py</code>, we add:</p>
+<pre><code class="language-python">class GroupAgeAndDogYears(Transform):
+    version = versions.VERSION_3_0_0
+    description = (
+        &quot;Added Dog.dog_years and grouped Dog.age and Dog.dog_years into one 'age' property&quot;
+    )
+
+    def to_representation(self, data: dict, request, instance):
+        &quot;&quot;&quot;
+        Here we downgrade the serializer's output data to make it match older API versions.
+        In this case that means returning the Dog.age value instead of the whole
+        {&quot;human_years&quot;: 1, &quot;dog_years&quot;: 7} dict.
+        &quot;&quot;&quot;
+        data[&quot;age&quot;] = data[&quot;age&quot;][&quot;human_years&quot;]
+        return data
+
+    def to_internal_value(self, data: dict, request):
+        &quot;&quot;&quot;
+        Here we upgrade the request.data to make it match the latest API version.
+        In this case the 'age' field is read-only, so no action is required.
+        &quot;&quot;&quot;
+        pass
+</code></pre>
+<p>We add this transform to the DogSerializer:</p>
+<pre><code class="language-python">class DogSerializer(VersionedSerializer, serializers.ModelSerializer):
+    age = DogAgeSerializer(source=&quot;*&quot;)
+
+    transforms = (
+        transforms.AddAge,
+        transforms.GroupAgeAndDogYears,
+    )
+
+    class Meta:
+        model = Dog
+        fields = (
+            &quot;id&quot;,
+            &quot;name&quot;,
+            &quot;birthday&quot;,
+            &quot;age&quot;,
+        )
+</code></pre>
+<p>Let's test the endpoint's behaviour.</p>
+<p>In Postman: <code>GET /doggies/1/</code> with version = 2.1.0:</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: 1,
+  &quot;name&quot;: &quot;Biko&quot;,
+  &quot;birthday&quot;: &quot;2014-05-06&quot;,
+  &quot;age&quot;: 8
+}
+</code></pre>
+<p>In Postman: <code>GET /doggies/1/</code> with version = 3.0.0:</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: 1,
+  &quot;name&quot;: &quot;Biko&quot;,
+  &quot;birthday&quot;: &quot;2014-05-06&quot;,
+  &quot;age&quot;: {
+    &quot;human_years&quot;: 8,
+    &quot;dog_years&quot;: 56
+  }
+}
+</code></pre>
+<h2 id="removing-a-field">Removing a field</h2>
+<p>Let's say we've decided to remove the age field altogether, and let the API consumer work it out for themselves based on the birthday field.</p>
+<p>In <code>doggies/transforms.py</code>:</p>
+<pre><code class="language-python">class RemoveAge(Transform):
+    version = versions.VERSION_4_0_0
+    description = &quot;Removed Dog.age field&quot;
+
+    def to_representation(self, data: dict, request, instance):
+        &quot;&quot;&quot;
+        Here we downgrade the serializer's output data to make it match older API versions.
+        We have removed the field, but older versions are still expecting it. So we add it to the
+        serializer output for older versions here.
+        &quot;&quot;&quot;
+        data[&quot;age&quot;] = {
+            &quot;human_years&quot;: instance.age,
+            &quot;dog_years&quot;: instance.dog_years,
+        }
+        return data
+</code></pre>
+<p>In <code>doggies/serializers.py</code>:</p>
+<pre><code class="language-python">from drf_versioning.serializers import VersionedSerializer
+from rest_framework import serializers
+
+from doggies.models import Dog
+from . import transforms
+
+
+class DogSerializer(VersionedSerializer, serializers.ModelSerializer):
+    transforms = (
+        transforms.AddAge,
+        transforms.GroupAgeAndDogYears,
+        transforms.RemoveAge,
+    )
+
+    class Meta:
+        model = Dog
+        fields = (
+            &quot;id&quot;,
+            &quot;name&quot;,
+            &quot;birthday&quot;,
+            # &quot;age&quot;,  # &lt;---- remove this field 
+        )
+</code></pre>
+<p>The resulting behaviour of the API is:</p>
+<p>In Postman: <code>GET /doggies/1/</code> with version = 3.0.0:</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: 1,
+  &quot;name&quot;: &quot;Biko&quot;,
+  &quot;birthday&quot;: &quot;2014-05-06&quot;,
+  &quot;age&quot;: {
+    &quot;human_years&quot;: 8,
+    &quot;dog_years&quot;: 56
+  }
+}
+</code></pre>
+<p>In Postman: <code>GET /doggies/1/</code> with version = 4.0.0:</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: 1,
+  &quot;name&quot;: &quot;Biko&quot;,
+  &quot;birthday&quot;: &quot;2014-05-06&quot;
+}
+</code></pre>
+<p>In this example, we still have access to the <code>Dog.age</code> and <code>Dog.dog_years</code> properties, so we can continue serializing real values for older request versions.</p>
+<p>But let's say the property has been removed, and we completely lose access to the source data. We can no longer serialize the dog's age for older versions. In this case we can instead serialize a "null value" that satisfies the type and structure that the older version is expecting. For Dog.age, we could use <code>-1</code>, for example.</p>
+<p>DRF Versioning provides another built in Transform subclass for this case: <code>RemoveField</code>. We can recreate the behaviour of our <code>RemoveAge</code> transform like this:</p>
+<pre><code class="language-python">class RemoveAge(RemoveField):
+    version = versions.VERSION_4_0_0
+    field_name = &quot;age&quot;
+    description = &quot;Removed Dog.age field&quot;
+    null_value = {&quot;human_years&quot;: -1, &quot;dog_years&quot;: -1}
+</code></pre>
+<p>Now is a good time to check that our Transforms correctly cascade their changes through all API versions.</p>
+<p>In Postman: <code>GET /doggies/1/</code> with version = 1.0.0:</p>
+<pre><code class="language-json">{
+  &quot;detail&quot;: &quot;Not found.&quot;
+}
+</code></pre>
+<p>In Postman: <code>GET /doggies/1/</code> with version = 2.0.0:</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: 1,
+  &quot;name&quot;: &quot;Biko&quot;,
+  &quot;birthday&quot;: &quot;2014-05-06&quot;
+}
+</code></pre>
+<p>In Postman: <code>GET /doggies/1/</code> with version = 2.1.0:</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: 1,
+  &quot;name&quot;: &quot;Biko&quot;,
+  &quot;birthday&quot;: &quot;2014-05-06&quot;,
+  &quot;age&quot;: -1
+}
+</code></pre>
+<p>In Postman: <code>GET /doggies/1/</code> with version = 3.0.0:</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: 1,
+  &quot;name&quot;: &quot;Biko&quot;,
+  &quot;birthday&quot;: &quot;2014-05-06&quot;,
+  &quot;age&quot;: {
+    &quot;human_years&quot;: -1,
+    &quot;dog_years&quot;: -1
+  }
+}
+</code></pre>
+<p>In Postman: <code>GET /doggies/1/</code> with version = 4.0.0:</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: 1,
+  &quot;name&quot;: &quot;Biko&quot;,
+  &quot;birthday&quot;: &quot;2014-05-06&quot;
+}
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../views/" class="btn btn-neutral float-left" title="Versioning views"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../views/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme_extra.js" defer></script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+      <script src="../../js/version-select.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

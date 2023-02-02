@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Installation - Django REST Framework Versioning</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+        <link href="../../css/version-select.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Installation";
+        var mkdocs_page_input_path = "tutorials/installation.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> Django REST Framework Versioning
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../quickstart/">Quick start</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../sample-django-project/">Sample Django project setup</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Installation</a>
+    <ul class="current">
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../views/">Versioning views</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../serializers/">Versioning models / serializers</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Django REST Framework Versioning</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+          <li>Tutorials &raquo;</li>
+      <li>Installation</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="installation">Installation</h1>
+<p>Add <code>djangorestframework-versioning</code> to your requirements.txt.</p>
+<p>Create a versioning module. This can be a django app, but it doesn't have to be, since we don't require any models.</p>
+<p>In the project root, do:</p>
+<pre><code class="language-shell">mkdir versioning
+</code></pre>
+<p>In <code>versioning/versions.py</code>:</p>
+<pre><code class="language-python">from drf_versioning.versions import Version
+
+VERSION_1_0_0 = Version(
+    &quot;1.0.0&quot;,
+    notes=[&quot;Initial version :)&quot;],
+)
+</code></pre>
+<p>in <code>versioning.version_list.py</code>:</p>
+<pre><code class="language-python">from . import versions
+
+VERSIONS = [
+    versions.VERSION_1_0_0,
+]
+</code></pre>
+<p>Add the following line to your <code>mysite/settings.py</code>.</p>
+<pre><code class="language-python"># Here we are telling rest_framework to use drf_versioning's AcceptHeaderVersioning class. It
+# inherits from rest_framework's AcceptHeaderVersioning class, and does almost the same thing,
+# but it adds the ability to choose a default version if the version is not specified in the
+# request.
+REST_FRAMEWORK = {
+    &quot;DEFAULT_VERSIONING_CLASS&quot;: &quot;drf_versioning.middleware.AcceptHeaderVersioning&quot;,
+}
+
+# Here we are telling drf_versioning where to find our list of supported versions (
+# `VERSION_LIST`). We also specify a default version that we would like to attach to requests
+# that do not specify a version. We have selected &quot;latest&quot; which will use the most recent Version
+# it can find in the supported versions list. Other acceptable values are &quot;earliest&quot; or a version
+# string e.g. &quot;1.0.0&quot;
+DRF_VERSIONING_SETTINGS = {
+    &quot;VERSION_LIST&quot;: &quot;versioning.version_list.VERSIONS&quot;,
+    &quot;DEFAULT_VERSION&quot;: &quot;latest&quot;,
+}
+</code></pre>
+<p>In <code>mysite/urls.py</code>, add <code>drf_versioning</code>s default urls. Your <code>urlpatterns</code> should now look like this:</p>
+<pre><code class="language-python">urlpatterns = [
+    path(&quot;admin/&quot;, admin.site.urls),
+    path(&quot;doggies/&quot;, include(&quot;doggies.urls&quot;)),
+    path(&quot;version/&quot;, include(&quot;drf_versioning.urls&quot;)),
+]
+</code></pre>
+<p>If we navigate to <code>http://localhost:8000/version/</code>, we should see a list of available versions, with a description of the changes in each version. The <code>notes</code> that we passed to the Version instance are also serialized here.</p>
+<pre><code class="language-json">[
+  {
+    &quot;version&quot;: &quot;1.0.0&quot;,
+    &quot;notes&quot;: [
+      &quot;Initial version :)&quot;
+    ],
+    &quot;models&quot;: [],
+    &quot;views&quot;: {
+      &quot;endpoints_introduced&quot;: [],
+      &quot;endpoints_removed&quot;: [],
+      &quot;actions_introduced&quot;: [],
+      &quot;actions_removed&quot;: []
+    }
+  }
+]
+</code></pre>
+<p>If we navigate to <code>http://localhost:8000/version/my_version/</code>, we should see which version was assigned to our request. Since we did not specify a versoin, we have been assigned the latest version -- 1.0.0 (which is also the only version).</p>
+<pre><code class="language-json">{
+  &quot;version&quot;: &quot;1.0.0&quot;,
+  &quot;notes&quot;: [
+    &quot;Initial version :)&quot;
+  ],
+  &quot;models&quot;: [],
+  &quot;views&quot;: {
+    &quot;endpoints_introduced&quot;: [],
+    &quot;endpoints_removed&quot;: [],
+    &quot;actions_introduced&quot;: [],
+    &quot;actions_removed&quot;: []
+  }
+}
+</code></pre>
+<p>Now that we have completed the setup, we can start the interesting part -- making changes to our API and supporting multiple versions!</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../sample-django-project/" class="btn btn-neutral float-left" title="Sample Django project setup"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../views/" class="btn btn-neutral float-right" title="Versioning views">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../sample-django-project/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../views/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme_extra.js" defer></script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+      <script src="../../js/version-select.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
