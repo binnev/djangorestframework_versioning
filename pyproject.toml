@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "djangorestframework_versioning"
-version = "2.0.5"
+version = "2.1.0"
 description = "Versioning tools for use with Django Rest Framework"
 readme = "README.md"
 authors = [{ name = "Robin Neville", email = "robin.m.neville@gmail.com" }]
@@ -32,7 +32,7 @@ Homepage = " https://github.com/binnev/djangorestframework_versioning"
 include = ["drf_versioning*"]
 
 [tool.bumpver]
-current_version = "2.0.5"
+current_version = "2.1.0"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "Bump version {old_version} -> {new_version}"
 commit = true
